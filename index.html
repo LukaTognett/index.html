@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -120,10 +120,10 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     transition: background 0.3s, color 0.3s;
-    /* живой фон: свечения привязаны к окну (background-attachment: fixed),
-       поэтому тулбар с тем же фоном совпадает с ним пиксель в пиксель */
+    /* живой фон: страница не скроллится (скроллится только .app-main),
+       поэтому фон можно вешать как обычный — без background-attachment: fixed,
+       который заставляет браузер перерисовывать весь экран */
     background-image: var(--bg-layers);
-    background-attachment: fixed;
   }
   ::-webkit-scrollbar { display: none; }
   button { font-family: inherit; }
@@ -246,10 +246,17 @@
     background: linear-gradient(90deg, var(--primary-strong), var(--primary), var(--blue));
     background-size: 200% 100%;
     transition: width 0.8s var(--ease-out);
-    animation: shimmer 3s linear infinite;
     box-shadow: 0 0 12px var(--primary-soft);
+    position: relative; overflow: hidden;
   }
-  @keyframes shimmer { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+  /* блик едет через transform — это анимация слоем композитора, без перерисовки */
+  .progress-fill::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.38) 50%, transparent 100%);
+    transform: translateX(-110%);
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
 
   .progress-row.xp { flex-direction: row; align-items: center; gap: 8px; }
   .progress-row.xp .progress-track { flex: 1; height: 4px; }
@@ -258,6 +265,12 @@
     background: linear-gradient(90deg, var(--purple), var(--pink));
     background-size: 200% 100%;
     transition: width 0.8s var(--ease-out);
+    position: relative; overflow: hidden;
+  }
+  .xp-fill::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.38) 50%, transparent 100%);
+    transform: translateX(-110%);
     animation: shimmer 3s linear infinite;
   }
   .xp-label { font-size: 9px; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -334,7 +347,6 @@
     animation-delay: calc(var(--i, 0) * 45ms);
     position: relative; overflow: hidden;
     transition: border-color .25s ease, box-shadow .3s ease, transform .3s var(--ease-out);
-    will-change: transform, opacity;
   }
   @media (hover: hover) {
     .card:hover { transform: translateY(-3px) scale(1.006); box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
@@ -345,11 +357,10 @@
     border-color: var(--red);
     box-shadow: 0 0 0 1px var(--red), 0 8px 28px var(--red-soft);
   }
-  .card.onboarding { border-color: var(--primary); animation: pulseBorder 2s infinite; }
+  .card.onboarding { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
   @keyframes staggerIn { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
   @keyframes pulseBorder { 0%,100% { box-shadow: 0 0 0 3px var(--primary-soft); } 50% { box-shadow: 0 0 0 8px var(--primary-soft); } }
   @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.92); } }
-
   .card-top { display: flex; gap: 14px; align-items: flex-start; }
   .emoji-box {
     width: 62px; height: 62px; flex-shrink: 0;
@@ -363,6 +374,13 @@
   .emoji-box.hobby   { background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(139,92,246,0.14)); border-color: rgba(167,139,250,0.15); }
   .emoji-box.fashion { background: linear-gradient(135deg, rgba(251,113,133,0.20), rgba(244,114,182,0.14)); border-color: rgba(251,113,133,0.15); }
   .item-icon { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
+  /* запасная эмодзи-иконка: показывается, если картинка не загрузилась */
+  .emoji-box::after {
+    content: attr(data-fb); position: absolute; inset: 0;
+    display: grid; place-items: center; font-size: 32px; line-height: 1;
+    opacity: 0; pointer-events: none;
+  }
+  .emoji-box.no-img::after { opacity: 1; }
   .inline-icon { width: 26px; height: 26px; object-fit: contain; vertical-align: middle; margin-right: 8px; display: inline-block; }
   .fallback-emoji { font-size: 32px; line-height: 1; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; }
   .inline-fallback-emoji { font-size: 20px; vertical-align: middle; margin-right: 6px; display: inline-block; }
@@ -842,15 +860,15 @@
   .card.far .spark { display: none; }
   .card.reveal.revealed { transform: none; }
   /* «none !important» выше глушит анимации карточки — возвращаем подсветку */
-  .card.hot.reveal { animation: hotGlow 2.6s ease-in-out infinite 1s !important; }
-  .card.urgent.reveal { animation: urgentPulse 2.2s ease-in-out infinite 1s !important; }
+  .card.hot.reveal::after { animation: none; }
+  .card.urgent.reveal { animation: none !important; }
   [data-motion="off"] .card.reveal { transform: none !important; }
 
   /* ═══════════ ДОП. АНИМАЦИИ ═══════════ */
   .brand-name { position: relative; background: linear-gradient(90deg, var(--text) 40%, var(--primary) 50%, var(--text) 60%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: brandSheen 6s ease-in-out infinite; }
   @keyframes brandSheen { 0%, 100% { background-position: 120% 0; } 55% { background-position: -20% 0; } }
-  @keyframes urgentPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(251,113,133,.35); } 50% { box-shadow: 0 0 0 6px rgba(251,113,133,0); } }
-  .card.urgent { animation: staggerIn .5s var(--ease-out) backwards, urgentPulse 2.2s ease-in-out infinite 1s; }
+  /* срочный заказ — статичная подсветка, без бесконечной перерисовки тени */
+  .card.urgent { border-color: var(--red); box-shadow: 0 0 0 1px rgba(251,113,133,.45), 0 8px 24px rgba(251,113,133,.14); }
   .season-indicator { transition: transform .25s var(--ease-out), box-shadow .3s; }
   @media (hover: hover) { .season-indicator:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); } }
   .quest-item { transition: transform .2s var(--ease-out), background .22s, border-color .22s; }
@@ -1060,10 +1078,11 @@
     pointer-events: none;
   }
   .card.hot::after { background: linear-gradient(90deg, transparent, rgba(251,113,133,.45), transparent); }
-  .card.hot { animation: staggerIn .5s var(--ease-out) backwards, hotGlow 2.6s ease-in-out infinite 1s; }
+  /* пульсация через opacity верхней линии — не перерисовываем тень у каждой карточки */
+  .card.hot.pulse::after { animation: hotGlow 2.6s ease-in-out infinite 1s; }
   @keyframes hotGlow {
-    0%, 100% { box-shadow: 0 0 0 1px var(--red), 0 8px 26px var(--red-soft); }
-    50%      { box-shadow: 0 0 0 1px var(--red), 0 8px 34px rgba(251,113,133,.30); }
+    0%, 100% { opacity: .35; }
+    50%      { opacity: 1; }
   }
 
   /* плитки и списки */
@@ -1087,16 +1106,17 @@
   .story-card { position: relative; overflow: hidden; }
   .story-card::after {
     content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
-    background: linear-gradient(115deg, transparent 35%, rgba(251,191,36,.14) 50%, transparent 65%);
-    background-size: 260% 100%; animation: sheen 5.5s ease-in-out infinite;
+    background: linear-gradient(115deg, transparent 35%, rgba(251,191,36,.16) 50%, transparent 65%);
+    background-size: 260% 100%;
+    transform: translateX(-25%);
+    animation: sheen 5.5s ease-in-out infinite;
   }
-  @keyframes sheen { 0% { background-position: 120% 0; } 55%, 100% { background-position: -60% 0; } }
+  @keyframes sheen { 0% { transform: translateX(-25%); } 55%, 100% { transform: translateX(25%); } }
   .goal-card { position: relative; overflow: hidden; }
 
   /* кнопки */
   button {
     transition: transform .16s var(--ease-out), box-shadow .25s, filter .2s, background .2s, border-color .2s, opacity .2s;
-    will-change: transform;
   }
   button:active:not(:disabled) { transform: scale(.965); }
   .btn-primary { box-shadow: 0 6px 22px -8px var(--primary), inset 0 1px 0 rgba(255,255,255,.2); }
@@ -2289,11 +2309,11 @@ function revealVisibleCards() {
 function setupReveal() {
   /* наблюдаем только новые карточки — старые уже «проявились» */
   const cards = document.querySelectorAll('#marketResults .card:not(.reveal), #invResults .card:not(.reveal), #orderResults .card:not(.reveal)');
-  if (!cards.length) { revealVisibleCards(); return; }
-  if (S.motion === false) { cards.forEach(c => { c.classList.add('revealed'); c.classList.remove('reveal'); }); revealVisibleCards(); return; }
+  if (!cards.length) return;
+  if (S.motion === false) { cards.forEach(c => { c.classList.add('revealed'); c.classList.remove('reveal'); }); return; }
   cards.forEach((c, i) => { c.classList.add('reveal'); c.style.setProperty('--i', Math.min(i, 8)); });
-  revealVisibleCards();
-  setTimeout(revealVisibleCards, 120);
+  /* IntersectionObserver считает видимость сама и не заставляет браузер
+     пересчитывать раскладку — поэтому в рендере нет принудительного reflow */
   if ('IntersectionObserver' in window) {
     if (!_revealObserver) {
       const root = $('appMain');
@@ -2306,7 +2326,29 @@ function setupReveal() {
       }, { root: root || null, rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
     }
     cards.forEach(c => _revealObserver.observe(c));
+  } else {
+    revealVisibleCards(); /* запасной путь для браузеров без IntersectionObserver */
   }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ПУЛЬСАЦИЯ «ВЫГОДНЫХ» КАРТОЧЕК
+   Анимируются только карточки в экране — иначе 30 анимаций
+   одновременно съедают кадры при прокрутке.
+   ═══════════════════════════════════════════════════════ */
+let _pulseObserver = null, _pulseSig = '';
+function setupPulse() {
+  if (S.motion === false) { if (_pulseObserver) { _pulseObserver.disconnect(); _pulseObserver = null; } _pulseSig = ''; return; }
+  const hot = document.querySelectorAll('.card.hot');
+  const sig = Array.prototype.map.call(hot, c => c.dataset.key || '').join(',');
+  if (sig === _pulseSig) return;
+  _pulseSig = sig;
+  if (_pulseObserver) { _pulseObserver.disconnect(); _pulseObserver = null; }
+  if (!hot.length || !('IntersectionObserver' in window)) return;
+  _pulseObserver = new IntersectionObserver(entries => {
+    entries.forEach(en => en.target.classList.toggle('pulse', en.isIntersecting));
+  }, { root: $('appMain') || null, rootMargin: '120px 0px' });
+  hot.forEach(c => _pulseObserver.observe(c));
 }
 
 /* подгрузка лотов при прокрутке вниз */
@@ -2322,6 +2364,7 @@ function maybeLoadMore() {
   _fmCache = { key: '', items: [] };
   /* список обновляем точечно — карточки не пересоздаются и не мигают */
   syncLists();
+  setupPulse();
   updateResultCount();
   const lotEl = $('marketLots');
   if (lotEl) lotEl.textContent = getFilteredMarket().length;
@@ -2347,6 +2390,8 @@ function doRender() {
     $('appMain').innerHTML = html;
     if (main && keepScroll > 0) { try { main.scrollTo({ top: keepScroll, behavior: 'instant' }); } catch (e) { main.scrollTop = keepScroll; } }
     _panelCache = { tab: activeTab, html };
+    /* positionSegs читает размеры — вызываем только когда панель перерисована */
+    positionSegs();
     const si = $('searchInput');
     if (si) {
       if (document.activeElement !== si && si.value !== (S.search || '')) si.value = S.search || '';
@@ -2360,7 +2405,7 @@ function doRender() {
   syncLists();
   applyStagger();
   setupReveal();
-  positionSegs();
+  setupPulse();
   paintStaticIcons();
   saveDebounced();
 }
@@ -2623,12 +2668,15 @@ function showPrivacy() {
 window.showPrivacy = showPrivacy;
 
 function getIconHtml(item, isInline) {
-  const fb = isInline ? 'inline-fallback-emoji' : 'fallback-emoji';
   const slug = item.icon || item.slug;
-  if (ICON_FAILED.has(slug)) return `<span class="${fb}">${item.emoji}</span>`;
   const url = CDN_BASE + slug + '.png';
   const cls = isInline ? 'inline-icon' : 'item-icon';
-  return `<img src="${url}" class="${cls}" loading="lazy" onerror="ICON_FAILED.add('${slug}');this.outerHTML='<span class=\\'${fb}\\'>${item.emoji}</span>'" alt="">`;
+  /* при ошибке НЕ меняем структуру DOM (никаких outerHTML) — только класс:
+     иначе пачка неудачных загрузок вызывает перерисовку прямо во время прокрутки */
+  const onerr = isInline
+    ? `ICON_FAILED.add('${slug}');this.outerHTML='<span class="inline-fallback-emoji">${item.emoji}</span>'`
+    : `ICON_FAILED.add('${slug}');this.style.display='none';this.parentNode.classList.add('no-img')`;
+  return `<img src="${url}" class="${cls}" loading="lazy" decoding="async" onerror="${onerr}" alt="">`;
 }
 /* ═══════════════════════════════════════════════════════
    ГЕНЕРАЦИЯ
@@ -2959,7 +3007,9 @@ function renderStats() {
   if (gt) gt.textContent = S.goal ? Math.round(S.goal.current / S.goal.target * 100) + '%' : '—';
   if (_lastStats.money !== Math.round(S.money)) {
     const mv = $('moneyChipVal');
-    if (mv) { mv.classList.remove('money-pulse'); void mv.offsetWidth; mv.classList.add('money-pulse'); }
+    /* анимация через Web Animations: не нужно читать offsetWidth,
+       который заставлял браузер пересчитывать раскладку всей страницы */
+    if (mv && mv.animate) mv.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.09)' }, { transform: 'scale(1)' }], { duration: 500, easing: 'cubic-bezier(.34,1.56,.64,1)' });
     _lastStats.money = Math.round(S.money);
   }
   const moneyChip = $('moneyChip');
@@ -3635,7 +3685,8 @@ function flyCardToInventory(lotId) {
   });
   setTimeout(() => clone.remove(), 640);
   const box = target.querySelector('.nav-ico');
-  if (box) { box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop'); }
+  /* перезапуск анимации без чтения offsetWidth (оно вызывает reflow) */
+  if (box) { box.classList.remove('pop'); box.getAnimations().forEach(a => { if (a.animationName === 'iconPop') a.cancel(); }); box.classList.add('pop'); }
 }
 function updateKeyboardDisplay() {
   if (!chat) return;
@@ -4088,7 +4139,16 @@ $('appMain').addEventListener('scroll', () => {
   _lastScrollAt = Date.now();
   if (_scrollPending) return;
   _scrollPending = true;
-  requestAnimationFrame(() => { _scrollPending = false; revealVisibleCards(); updateScrollProgress(); maybeLoadMore(); });
+  requestAnimationFrame(() => {
+    _scrollPending = false;
+    /* сначала читаем раскладку, потом пишем в DOM — иначе браузер
+       пересчитывает раскладку дважды за кадр и прокрутка подтормаживает */
+    const main = $('appMain');
+    let p = 0;
+    if (main) { const max = main.scrollHeight - main.clientHeight; p = max > 4 ? Math.min(1, main.scrollTop / max) : 0; }
+    maybeLoadMore();
+    updateScrollProgress(p);
+  });
 }, { passive: true });
 function isScrollGesture() { return (Date.now() - _lastScrollAt) < 280; }
 document.addEventListener('pointerdown', e => {
@@ -4104,12 +4164,10 @@ document.addEventListener('pointerdown', e => {
   b.appendChild(r);
   setTimeout(() => r.remove(), 620);
 }, { passive: true });
-function updateScrollProgress() {
-  const main = $('appMain'), bar = $('scrollBar');
-  if (!main || !bar) return;
-  const max = main.scrollHeight - main.clientHeight;
-  const p = max > 4 ? Math.min(1, main.scrollTop / max) : 0;
-  bar.style.width = (p * 100).toFixed(2) + '%';
+function updateScrollProgress(pct) {
+  const bar = $('scrollBar');
+  if (!bar) return;
+  bar.style.width = (pct * 100).toFixed(2) + '%';
 }
 function moveNavPill(tab) {
   const pill = $('navPill');
@@ -4130,7 +4188,8 @@ function switchTab(tab) {
   const main = $('appMain');
   if (main) main.scrollTop = 0;
   main.classList.remove('slide-left', 'slide-right');
-  void main.offsetWidth;
+  /* перезапуск анимации сдвига без принудительного reflow */
+  main.getAnimations().forEach(a => { if (a.animationName === 'slideLeftIn' || a.animationName === 'slideRightIn') a.cancel(); });
   if (newIndex > oldIndex) main.classList.add('slide-left');
   else if (newIndex < oldIndex) main.classList.add('slide-right');
   playSound('click'); haptic(10); render();
