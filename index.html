@@ -886,15 +886,13 @@
 
 
   /* ═══════════ ТУЛБАР РЫНКА (переделан с нуля) ═══════════ */
-  /* тулбар стоит прямо перед товарами и закреплён: при прокрутке
-     остаётся на месте. Фон — общий с body, поэтому шва не видно. */
+  /* тулбар стоит на своём месте перед товарами и уезжает вместе с ними
+     при прокрутке — липнет к верху он больше не должен. */
   .toolbar {
-    position: sticky; top: 0; z-index: 6;
-    margin: 0 calc(var(--app-pad) * -1) 10px;
-    padding: 10px var(--app-pad) 10px;
-    background-color: var(--bg);
-    background-image: var(--bg-layers);
-    background-attachment: fixed;
+    position: static;
+    margin: 0 0 12px;
+    padding: 0;
+    background: none;
     animation: fadeUp .42s var(--ease-out) backwards;
   }
   .tb-search {
@@ -1608,7 +1606,7 @@ function deobfuscate(str) {
    ═══════════════════════════════════════════════════════ */
 const CDN_BASE = 'https://img.icons8.com/fluency/96/';
 /* slug'и, которых нет на Icons8 — подменяем на валидные (проверено HEAD-запросами) */
-const ICON_FIX = { tablet: 'ipad', 'smart-watch': 'apple-watch', 'graphics-card': 'video-card', 'vr-headset': 'headset', desk: 'table', 'ram-memory': 'circuit', 'robot-vacuum-cleaner': 'broom', multicooker: 'toaster', hairdryer: 'iron', snowboard: 'ski', synthesizer: 'piano', 'playing-cards': 'cards', belt: 'tie', dress: 'bride', handbag: 'purse', 'ice-skates': 'hockey', jeans: 'trousers', 'running-shoe': 'trainers', suit: 'suitcase', sunglasses: 'glasses', sweater: 'jumper', watch: 'apple-watch' };
+const ICON_FIX = { tablet: 'ipad', 'smart-watch': 'apple-watch', 'graphics-card': 'video-card', 'vr-headset': 'headset', desk: 'table', 'ram-memory': 'integrated-circuit', 'robot-vacuum-cleaner': 'broom', multicooker: 'toaster', hairdryer: 'iron', snowboard: 'ski', synthesizer: 'piano', 'playing-cards': 'cards', belt: 'tie', dress: 'bride', handbag: 'purse', 'ice-skates': 'hockey', jeans: 'trousers', 'running-shoe': 'trainers', suit: 'suitcase', sunglasses: 'glasses', sweater: 'jumper', watch: 'apple-watch' };
 const ICON_FAILED = new Set();
 /* ═══════════════════════════════════════════════════════
    ВЕКТОРНЫЕ ИКОНКИ (вместо эмодзи)
@@ -2240,12 +2238,16 @@ function syncList(hostId, listId, items, renderItem, emptyHTML) {
   if (!host) return;
   const el = listEl(listId);
   if (!items.length) {
-    if (el._html !== (emptyHTML || '')) { el.innerHTML = emptyHTML || ''; el._html = emptyHTML || ''; }
+    el.innerHTML = emptyHTML || '';
+    el._html = emptyHTML || '';
     if (el.parentElement !== host) host.appendChild(el);
     return;
   }
   const old = new Map();
-  for (const ch of Array.from(el.children)) if (ch.dataset.key) old.set(ch.dataset.key, ch);
+  for (const ch of Array.from(el.children)) {
+    if (ch.dataset.key) old.set(ch.dataset.key, ch);
+    else ch.remove(); /* убираем заглушку «ничего не найдено» */
+  }
   const order = [];
   for (const it of items) {
     const key = String(it.id);
@@ -2826,7 +2828,7 @@ function doQuickSell(it, price) {
   playSound('sell'); haptic(20);
   toast(profit >= 0 ? t('msg_profit_up', { n: fmt(profit) }) : t('msg_profit_down', { n: fmt(profit) }), profit >= 0 ? 'success' : 'error');
   checkAch(); checkRich();
-  if (!_batch) render();
+  render();
 }
 function repairZones(item) {
   const mv = (item && item.marketValue) || 10000;
@@ -3888,9 +3890,7 @@ function sellAll() {
   if (!items.length) { toast(t('sell_all_none'), 'error'); return; }
   const total = items.reduce((s, i) => s + round100(Math.max(100, sellBase(i) * 0.92)), 0);
   showConfirm(t('sell_all_title'), t('sell_all_text', { n: items.length, m: fmt(total) }), () => {
-    _batch = true;
     for (const it of items) doQuickSell(it, round100(Math.max(100, sellBase(it) * 0.92)));
-    _batch = false;
     toast(t('sell_all_done', { n: items.length }), 'success');
     render();
   });
