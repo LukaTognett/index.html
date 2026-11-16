@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -358,7 +358,7 @@
     box-shadow: 0 0 0 1px var(--red), 0 8px 28px var(--red-soft);
   }
   .card.onboarding { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
-  @keyframes staggerIn { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes staggerIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
   @keyframes pulseBorder { 0%,100% { box-shadow: 0 0 0 3px var(--primary-soft); } 50% { box-shadow: 0 0 0 8px var(--primary-soft); } }
   @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.92); } }
   .card-top { display: flex; gap: 14px; align-items: flex-start; }
@@ -783,6 +783,11 @@
   [data-device="phone"] button { min-height: 46px; }
   [data-device="phone"] .card { padding: 14px; gap: 12px; }
   [data-device="phone"] .row { font-size: var(--f-base); }
+  /* на телефоне размытие шапки/навигации дешевле */
+  [data-device="phone"] .hud, [data-device="phone"] .bottom-nav {
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
 
   /* ═══════════ РАЗДЕЛЫ ПРОФИЛЯ ═══════════ */
   .profile-section { display: flex; flex-direction: column; gap: 10px; }
@@ -856,7 +861,9 @@
 
 
   /* ═══════════ ПОЯВЛЕНИЕ ПРИ ПРОКРУТКЕ ═══════════ */
-  .card.reveal { animation: none !important; opacity: 1; transform: translateY(16px) scale(.985); transition: transform .5s var(--ease-out); }
+  /* только сдвиг: масштаб заставляет браузер перерисовывать карточку заново,
+     а сдвиг композитится на видеокарте без перерисовки */
+  .card.reveal { animation: none !important; opacity: 1; transform: translateY(16px); transition: transform .5s var(--ease-out); }
   .card.far .spark { display: none; }
   .card.reveal.revealed { transform: none; }
   /* «none !important» выше глушит анимации карточки — возвращаем подсветку */
@@ -2667,10 +2674,14 @@ function showPrivacy() {
 }
 window.showPrivacy = showPrivacy;
 
+const ICON_BROKEN = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+/* иконка уже не загрузилась — не повторяем запрос, а сразу показываем эмодзи */
+const iconBroken = it => !!(it && ICON_FAILED.has(it.icon || it.slug));
 function getIconHtml(item, isInline) {
   const slug = item.icon || item.slug;
-  const url = CDN_BASE + slug + '.png';
   const cls = isInline ? 'inline-icon' : 'item-icon';
+  if (ICON_FAILED.has(slug)) return `<img src="${ICON_BROKEN}" class="${cls}" style="display:none" alt="">`;
+  const url = CDN_BASE + slug + '.png';
   /* при ошибке НЕ меняем структуру DOM (никаких outerHTML) — только класс:
      иначе пачка неудачных загрузок вызывает перерисовку прямо во время прокрутки */
   const onerr = isInline
@@ -3185,7 +3196,7 @@ function renderMarketCard(it) {
 
     return `<div class="card ${isHot ? 'hot' : ''}">
       <div class="card-top">
-        <div class="emoji-box ${it.cat}">${getIconHtml(it)}</div>
+        <div class="emoji-box ${it.cat}${iconBroken(it) ? ' no-img' : ''}" data-fb="${it.emoji}">${getIconHtml(it)}</div>
         <div class="info">
           <div class="name">${itemName(it)}</div>
           <div class="cond">${Math.round(it.condition * 100)}% · ${it.story ? nm(it.story.text) : t('cond_good')}</div>
@@ -3280,10 +3291,10 @@ function renderInvCard(it) {
   const canRestore = it.condition < 0.99 && S.money >= restoreCost;
   const canStore = storeCap > 0 && S.storage.length < storeCap;
   const shown = known ? it.trueValue : (it.estimate || it.marketValue || 0);
-  return `<div class="card"><div class="card-top"><div class="emoji-box ${it.cat}">${getIconHtml(it)}</div><div class="info"><div class="name">${itemName(it)}</div><div class="cond">${Math.round(it.condition * 100)}% ${t('inv_state')}</div>${tags.length ? `<div class="tags-row">${tags.join('')}</div>` : ''}</div></div><div class="rows"><div class="row"><span>${t('inv_bought')}</span><b>${fmt(it.askPrice)}</b></div><div class="row"><span>${known ? t('market_real') : t('market_est')}</span><b class="${shown > it.askPrice ? 'good' : 'bad'}">${known ? '' : '~'}${fmt(shown)}</b></div></div><div class="actions">${it.condition < 0.99 ? `<button class="btn-ghost wide" data-act="restore" data-id="${it.id}" ${canRestore ? '' : 'disabled'} style="color:var(--primary);border:1px solid var(--primary)">${ico('sparkle')}${t('btn_restore')} · ${fmt(restoreCost)}</button>` : ''}${it.defect ? `<button data-act="repair" data-id="${it.id}">${ico('wrench')}${t('btn_repair')}</button>` : ''}${storeCap > 0 ? `<button class="btn-ghost store-btn" data-act="store" data-id="${it.id}" ${canStore ? '' : 'disabled'}>${ico('box')}<span>${t('btn_store')}</span><span class="armed-lbl"></span></button>` : ''}<button class="btn-sell" data-act="sell" data-id="${it.id}">${ico('message')}${t('btn_sell')}</button><button class="btn-ghost quicksell-btn" data-act="quicksell" data-id="${it.id}">${ico('bolt')}<span>${t('quick_sell')}</span><span class="armed-lbl"></span></button></div></div>`;
+  return `<div class="card"><div class="card-top"><div class="emoji-box ${it.cat}${iconBroken(it) ? ' no-img' : ''}" data-fb="${it.emoji}">${getIconHtml(it)}</div><div class="info"><div class="name">${itemName(it)}</div><div class="cond">${Math.round(it.condition * 100)}% ${t('inv_state')}</div>${tags.length ? `<div class="tags-row">${tags.join('')}</div>` : ''}</div></div><div class="rows"><div class="row"><span>${t('inv_bought')}</span><b>${fmt(it.askPrice)}</b></div><div class="row"><span>${known ? t('market_real') : t('market_est')}</span><b class="${shown > it.askPrice ? 'good' : 'bad'}">${known ? '' : '~'}${fmt(shown)}</b></div></div><div class="actions">${it.condition < 0.99 ? `<button class="btn-ghost wide" data-act="restore" data-id="${it.id}" ${canRestore ? '' : 'disabled'} style="color:var(--primary);border:1px solid var(--primary)">${ico('sparkle')}${t('btn_restore')} · ${fmt(restoreCost)}</button>` : ''}${it.defect ? `<button data-act="repair" data-id="${it.id}">${ico('wrench')}${t('btn_repair')}</button>` : ''}${storeCap > 0 ? `<button class="btn-ghost store-btn" data-act="store" data-id="${it.id}" ${canStore ? '' : 'disabled'}>${ico('box')}<span>${t('btn_store')}</span><span class="armed-lbl"></span></button>` : ''}<button class="btn-sell" data-act="sell" data-id="${it.id}">${ico('message')}${t('btn_sell')}</button><button class="btn-ghost quicksell-btn" data-act="quicksell" data-id="${it.id}">${ico('bolt')}<span>${t('quick_sell')}</span><span class="armed-lbl"></span></button></div></div>`;
 }
 function renderStorageCard(it) {
-  return `<div class="card"><div class="card-top"><div class="emoji-box ${it.cat}">${getIconHtml(it)}</div><div class="info"><div class="name">${itemName(it)}</div><div class="cond">${Math.round(it.condition * 100)}% ${t('inv_state')}</div></div></div><button class="btn-ghost" data-act="unstore" data-id="${it.id}" ${S.inv.length >= invLimit() ? 'disabled' : ''}>${t('btn_unstore')}</button></div>`;
+  return `<div class="card"><div class="card-top"><div class="emoji-box ${it.cat}${iconBroken(it) ? ' no-img' : ''}" data-fb="${it.emoji}">${getIconHtml(it)}</div><div class="info"><div class="name">${itemName(it)}</div><div class="cond">${Math.round(it.condition * 100)}% ${t('inv_state')}</div></div></div><button class="btn-ghost" data-act="unstore" data-id="${it.id}" ${S.inv.length >= invLimit() ? 'disabled' : ''}>${t('btn_unstore')}</button></div>`;
 }
 function renderInv() {
   let html = '';
@@ -3310,7 +3321,7 @@ function renderOrderCard(o) {
   const daysLeft = o.deadline - S.day;
   const urgent = daysLeft <= 1;
   const hasItem = S.inv.find(i => i.itemId === o.itemId && !i.defect);
-  return `<div class="card ${urgent ? 'urgent' : ''}"><div class="card-top"><div class="emoji-box" style="background:var(--surface-2)">${getIconHtml(o)}</div><div class="info"><div class="name">${itemName(o)}</div><div class="cond" style="color:${urgent ? 'var(--red)' : 'var(--text-3)'}">${urgent ? t('order_urgent') + ' · ' : ''}${t('order_left', { n: daysLeft })}</div></div></div><div class="rows"><div class="row"><span>${t('order_reward')}</span><b class="good">${fmt(o.reward)}</b></div><div class="row"><span>${t('order_bonus')}</span><b class="warn">+${o.bonus}%</b></div></div><button class="btn-buy" data-act="order" data-id="${o.id}" ${hasItem ? '' : 'disabled'}>${ico('check')}${hasItem ? t('btn_order') : t('order_need_item')}</button></div>`;
+  return `<div class="card ${urgent ? 'urgent' : ''}"><div class="card-top"><div class="emoji-box${iconBroken(o) ? ' no-img' : ''}" style="background:var(--surface-2)" data-fb="${o.emoji}">${getIconHtml(o)}</div><div class="info"><div class="name">${itemName(o)}</div><div class="cond" style="color:${urgent ? 'var(--red)' : 'var(--text-3)'}">${urgent ? t('order_urgent') + ' · ' : ''}${t('order_left', { n: daysLeft })}</div></div></div><div class="rows"><div class="row"><span>${t('order_reward')}</span><b class="good">${fmt(o.reward)}</b></div><div class="row"><span>${t('order_bonus')}</span><b class="warn">+${o.bonus}%</b></div></div><button class="btn-buy" data-act="order" data-id="${o.id}" ${hasItem ? '' : 'disabled'}>${ico('check')}${hasItem ? t('btn_order') : t('order_need_item')}</button></div>`;
 }
 function renderOrders() {
   let html = '';
