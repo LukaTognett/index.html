@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#08080c">
+<meta name="theme-color" content="#0a0c14">
 <meta name="format-detection" content="telephone=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Reseller Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
   /* ═══════════ DESIGN TOKENS ═══════════ */
   :root {
@@ -284,7 +286,7 @@
   @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } }
 
   /* ═══════════ MAIN ═══════════ */
-  .app-main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 var(--app-pad) 16px; overscroll-behavior: contain; }
+  .app-main { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 var(--app-pad) 118px; overscroll-behavior: contain; }
   .app-main.slide-left { animation: slideLeftIn 0.3s var(--ease-out) both; }
   .app-main.slide-right { animation: slideRightIn 0.3s var(--ease-out) both; }
   @keyframes slideLeftIn { from { opacity: 0; transform: translateX(30px); } }
@@ -460,8 +462,12 @@
 
   /* ═══════════ BOTTOM NAV ═══════════ */
   .bottom-nav {
-    flex-shrink: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px;
-    margin: 8px 12px calc(12px + env(safe-area-inset-bottom));
+    /* фикс-навигация: не зависит от высоты контента и клавиатуры —
+       нижние кнопки больше не «пропадают» за пределами экрана */
+    position: fixed; left: 12px; right: 12px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 30;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px;
     padding: 6px; border-radius: var(--r-xl);
     background: var(--glass);
     backdrop-filter: blur(24px) saturate(180%);
@@ -524,10 +530,10 @@
   .chat-status { font-size: var(--f-sm); color: var(--green); display: flex; align-items: center; gap: 6px; font-weight: 700; margin-top: 2px; }
   .chat-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .chat-status.offline { color: var(--text-3); }
-  .chat-messages { display: flex; flex-direction: column; gap: 10px; padding: 8px 0; max-height: 40dvh; overflow-y: auto; }
+  .chat-messages { display: flex; flex-direction: column; gap: 10px; padding: 8px 0; max-height: 40dvh; overflow-y: auto; contain: layout paint; }
   .chat-messages.compact { max-height: 15dvh; }
   .msg { display: flex; gap: 8px; align-items: flex-end; animation: msgIn 0.35s var(--ease-out); }
-  @keyframes msgIn { from { opacity: 0; transform: translateY(12px) scale(0.94); } }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(-12px) scale(0.94); } }
   .msg.me { flex-direction: row-reverse; }
   .msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
   .msg-bubble {
@@ -731,6 +737,59 @@
   .privacy-content p { margin: 8px 0; }
   .privacy-content b { color: var(--text); font-weight: 800; }
 
+  /* ═══════════ РЫНОЧНАЯ ЛЕНТА ═══════════ */
+  .ticker {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--r-full); padding: 7px 12px;
+    box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .ticker-lbl { display: inline-flex; color: var(--text-3); flex: none; }
+  .ticker-lbl .ico { width: 15px; height: 15px; }
+  .ticker-row { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ticker-row::-webkit-scrollbar { display: none; }
+  .tick {
+    display: inline-flex; align-items: center; gap: 4px; flex: none;
+    font-size: var(--f-sm); font-weight: 800; white-space: nowrap;
+    padding: 4px 10px; border-radius: var(--r-full);
+    font-variant-numeric: tabular-nums;
+  }
+  .tick .ico { width: 12px; height: 12px; }
+  .tick b { font-weight: 800; color: var(--text); }
+  .tick.up { background: var(--green-soft); color: var(--green); }
+  .tick.down { background: var(--red-soft); color: var(--red); }
+
+  /* ═══════════ БЕЙДЖ ПРИБЫЛИ НА КАРТОЧКЕ ═══════════ */
+  .profit-badge {
+    position: absolute; top: 11px; right: 11px; z-index: 2;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: var(--r-full);
+    background: var(--green-soft); color: var(--green);
+    font-size: var(--f-sm); font-weight: 800; font-variant-numeric: tabular-nums;
+    box-shadow: inset 0 0 0 1px rgba(52,211,153,.3);
+  }
+  .profit-badge .ico { width: 13px; height: 13px; }
+  .profit-badge.neg { background: var(--red-soft); color: var(--red); box-shadow: inset 0 0 0 1px rgba(251,113,133,.3); }
+  /* имя не заезжает под абсолютный бейдж */
+  .profit-badge ~ .card-top .name { padding-right: 78px; }
+  /* изоляция раскладки/краски: содержимое карточки не влияет на соседей */
+  .card { contain: layout paint style; }
+
+  /* ═══════════ ШКАЛА СОСТОЯНИЯ ═══════════ */
+  .cond { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .cond-bar { width: 40px; height: 4px; border-radius: 3px; background: var(--surface-3); overflow: hidden; flex: none; }
+  .cond-bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--yellow), var(--green)); }
+
+  /* ═══════════ ПУСТЫЕ СОСТОЯНИЯ ═══════════ */
+  .empty {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 38px 20px; color: var(--text-3); font-size: var(--f-md);
+    line-height: 1.55; font-weight: 600; text-align: center;
+  }
+  .empty .ico { width: 32px; height: 32px; opacity: .45; margin-bottom: 6px; }
+  .empty-t { font-size: var(--f-lg); font-weight: 800; color: var(--text-2); }
+  .empty-h { font-size: var(--f-base); color: var(--text-3); max-width: 34ch; }
+
   /* ═══════════ НОВЫЕ БЛОКИ: ТРЕНДЫ, ЦЕЛИ, СЮЖЕТЫ, ЧЁРНЫЙ РЫНОК ═══════════ */
   .spark { display: block; width: 84px; height: 26px; margin: 8px 0 0 auto; opacity: .9; overflow: visible; }
   .spark path { vector-effect: non-scaling-stroke; }
@@ -773,13 +832,13 @@
   [data-device="desktop"] .hud-hero { grid-column: 1 / -1; margin-bottom: 4px; }
   [data-device="desktop"] .hud-progress { grid-column: 1 / -1; margin-top: 10px; }
   [data-device="desktop"] .money-value { font-size: 34px; }
-  [data-device="desktop"] .app-main { padding: 0 18px 26px; }
+  [data-device="desktop"] .app-main { padding: 0 18px 126px; }
   [data-device="desktop"] #marketResults, [data-device="desktop"] #invResults { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: var(--gap-card); align-items: stretch; }
   [data-device="desktop"] .sort-bar, [data-device="desktop"] .filters-bar { flex-wrap: wrap; overflow: visible; }
   [data-device="desktop"] .nav-label { font-size: 11px; }
   [data-device="desktop"] .nav-btn { padding: 11px 4px 9px; }
   [data-device="desktop"] .sheet { max-width: 760px; }
-  [data-device="desktop"] .bottom-nav { padding: 8px 10px; }
+  [data-device="desktop"] .bottom-nav { padding: 8px 10px; left: 50%; right: auto; transform: translateX(-50%); width: min(1156px, calc(100vw - 24px)); }
   [data-device="desktop"] .profile-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
 
   [data-device="phone"] .nav-label { font-size: 9.5px; }
@@ -831,9 +890,66 @@
   .device-btn .dev-ico { font-size: 20px; display: inline-grid; place-items: center; }
   .device-btn .dev-ico .ico { width: 20px; height: 20px; }
   .save-info { font-size: var(--f-sm); color: var(--text-3); font-weight: 700; text-align: center; padding: 4px; }
+  /* сворачиваемый журнал действий */
+  .log-toggle { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 8px;
+    background: none; border: none; color: var(--text); font-family: inherit; font-weight: 800;
+    font-size: var(--f-base); padding: 2px 0 10px; cursor: pointer; }
+  .log-toggle .log-t-l { display: inline-flex; align-items: center; gap: 7px; }
+  .log-toggle .log-ico { display: inline-flex; color: var(--text-3); }
+  .log-toggle .log-ico .ico { width: 16px; height: 16px; }
+  .log-arrow { display: inline-flex; color: var(--text-3); transition: transform .25s var(--ease-out); }
+  .log-arrow .ico { width: 16px; height: 16px; }
+  .log-arrow.closed { transform: rotate(-90deg); }
+  /* аукцион: лог ставок и живой чип */
+  .auc-log { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+  .al-row { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700; padding: 5px 10px; border-radius: 9px; background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.92); }
+  .al-row.me { background: rgba(255,255,255,0.3); color: #fff; }
+  .auc-live { font-size: 12px; font-weight: 900; background: rgba(255,255,255,0.25); padding: 3px 9px; border-radius: 999px; }
+  /* кнопка «как получить» на карточке достижения */
+  .ach-grid .ach { position: relative; }
+  .ach-q { position: absolute; top: 7px; right: 7px; width: 20px; height: 20px; border-radius: 50%;
+    border: 1px solid var(--glass-border); background: var(--surface-2); color: var(--text-3);
+    font-weight: 900; font-size: 12px; line-height: 1; cursor: pointer; display: grid; place-items: center; padding: 0; }
+  .ach-q:active { transform: scale(0.9); }
+  /* ── Золотые лоты ── */
+  .tag-gold { background: rgba(251,191,36,.18) !important; color: #fbbf24 !important; box-shadow: inset 0 0 0 1px rgba(251,191,36,.4) !important; }
+  .card.golden { border-color: rgba(251,191,36,.45); box-shadow: 0 0 22px -8px rgba(251,191,36,.55); position: relative; }
+  .card.golden::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    background: linear-gradient(115deg, transparent 35%, rgba(255,205,70,.15) 50%, transparent 65%); background-size: 240% 100%; animation: goldSweep 3s linear infinite; }
+  @keyframes goldSweep { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+  [data-motion="off"] .card.golden::after { animation: none; }
+  /* ── Кейсы ── */
+  .case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .case-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 6px; border-radius: var(--r-lg);
+    border: 1px solid var(--glass-border); background: var(--glass); color: var(--text); font-family: inherit; cursor: pointer; transition: transform .15s var(--ease-out); }
+  .case-card:active { transform: scale(.95); }
+  .case-card.off { opacity: .45; }
+  .case-emoji { font-size: 34px; }
+  .case-name { font-size: 12px; font-weight: 800; text-align: center; }
+  .case-cost { font-size: 12px; font-weight: 900; color: var(--primary); }
+  /* ── Рулетка (кейсы и колесо) ── */
+  .spin-wrap { position: relative; overflow: hidden; height: 88px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); margin: 12px 0; }
+  .spin-strip { position: absolute; top: 0; left: 0; display: flex; gap: 6px; padding: 8px; will-change: transform; }
+  .spin-cell { flex: 0 0 auto; width: 72px; height: 70px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); display: grid; place-items: center; font-size: 30px; }
+  .spin-pointer { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--primary); box-shadow: 0 0 10px var(--primary); z-index: 2; }
+  @keyframes coinFloat { 50% { transform: translateY(-9px) scale(1.05); } }
+  /* ── Живой фон: медленно дрейфующие пятна света ── */
+  body::before { content: ''; position: fixed; inset: -20%; z-index: -1; pointer-events: none;
+    background: radial-gradient(38% 44% at 18% 22%, rgba(139,92,246,.16), transparent 70%),
+      radial-gradient(30% 36% at 82% 12%, rgba(34,211,238,.10), transparent 70%),
+      radial-gradient(34% 40% at 70% 85%, rgba(251,113,133,.09), transparent 70%);
+    animation: aurora 26s ease-in-out infinite alternate; }
+  @keyframes aurora { 0% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(2.5%,-2%,0) scale(1.06); } 100% { transform: translate3d(-2%,2.5%,0) scale(1.02); } }
+  [data-theme="light"] body::before { animation: none; opacity: .5; }
+  [data-motion="off"] body::before { animation: none; }
+  /* ── Сплэш: перелив заголовка и парящая монета ── */
+  .splash-content h1 { color: #fff; background: linear-gradient(100deg, #fff 30%, var(--primary) 50%, #fff 70%); background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: titleShine 3.4s linear infinite; }
+  .splash-logo { animation: coinFloat 3s ease-in-out infinite; }
+  @keyframes titleShine { to { background-position: -220% 0; } }
+  [data-motion="off"] .splash-content h1, [data-motion="off"] .splash-logo { animation: none; }
 
   /* ═══════════ ПЛАВНОСТЬ: ИНДИКАТОР, RIPPLE, ЛЕТЯЩАЯ КАРТОЧКА ═══════════ */
-  .bottom-nav { position: relative; }
   .nav-pill {
     position: absolute; top: 6px; bottom: 6px; left: 0; width: 0; border-radius: 16px;
     background: var(--primary-soft); opacity: 0; z-index: 0; pointer-events: none;
@@ -892,11 +1008,33 @@
      а сдвиг композитится на видеокарте без перерисовки */
   .card.reveal { animation: none !important; opacity: 1; transform: translateY(16px); transition: transform .5s var(--ease-out); }
   .card.far .spark { display: none; }
-  .card.reveal.revealed { transform: none; }
+  .card.reveal.revealed { transform: none; transition: transform .3s var(--ease-out), border-color .25s ease, box-shadow .3s ease; }
+  @media (hover: hover) { .card.reveal.revealed:hover { transform: translateY(-3px) scale(1.006); box-shadow: var(--shadow-lg); border-color: var(--border-strong); } }
   /* «none !important» выше глушит анимации карточки — возвращаем подсветку */
   .card.hot.reveal::after { animation: none; }
   .card.urgent.reveal { animation: none !important; }
   [data-motion="off"] .card.reveal { transform: none !important; }
+  /* золотое свечение — только у проявленных карточек: фоновая анимация
+     у невидимых рвёт кадры при быстрой прокрутке */
+  .card.reveal:not(.revealed).golden::after { animation: none; }
+  /* ── Встряска экрана (джекпот, уровень, беды) ── */
+  @keyframes shakeX { 0%, 100% { transform: translate3d(0,0,0); } 20% { transform: translate3d(-7px, 2px, 0); } 40% { transform: translate3d(6px, -2px, 0); } 60% { transform: translate3d(-4px, 1px, 0); } 80% { transform: translate3d(3px, -1px, 0); } }
+  #appMain.shake { animation: shakeX .5s var(--ease-out); }
+  [data-motion="off"] #appMain.shake { animation: none; }
+  /* ── Вспышка на уровень ── */
+  .screen-flash { position: fixed; inset: 0; z-index: 98; pointer-events: none; background: radial-gradient(circle at 50% 55%, rgba(255,255,255,.5), transparent 72%); animation: flashFade .65s ease-out forwards; }
+  @keyframes flashFade { from { opacity: 1; } to { opacity: 0; } }
+  [data-motion="off"] .screen-flash { display: none; }
+  /* ── Искра на золотом лоте ── */
+  .card.golden::before { content: '✨'; position: absolute; top: 6px; right: 10px; font-size: 13px; z-index: 1; pointer-events: none; animation: floatY 2.4s ease-in-out infinite; }
+  [data-motion="off"] .card.golden::before { animation: none; }
+  /* ── Альбом коллекционера ── */
+  .coll-bar { height: 8px; border-radius: 6px; background: var(--surface-2); overflow: hidden; margin-bottom: 10px; }
+  .coll-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--primary), var(--primary-strong)); transition: width .6s var(--ease-out); }
+  .coll-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
+  .coll-cell { aspect-ratio: 1; display: grid; place-items: center; font-size: 20px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); opacity: .4; filter: grayscale(1); transition: opacity .3s, filter .3s, transform .15s var(--ease-out); }
+  .coll-cell.on { opacity: 1; filter: none; background: var(--yellow-soft); }
+  .coll-cell:active { transform: scale(.92); }
 
   /* ═══════════ ДОП. АНИМАЦИИ ═══════════ */
   .brand-name { position: relative; background: linear-gradient(90deg, var(--text) 40%, var(--primary) 50%, var(--text) 60%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: brandSheen 6s ease-in-out infinite; }
@@ -930,7 +1068,24 @@
 
   /* ═══════════ ПОЛОСА ПРОКРУТКИ ═══════════ */
   .scroll-progress { height: 3px; margin: 0 12px; position: relative; z-index: 9; }
-  .scroll-progress > div { height: 100%; width: 0; border-radius: 0 4px 4px 0; background: linear-gradient(90deg, var(--primary), var(--primary-strong), var(--pink)); transition: width .12s linear; box-shadow: 0 0 12px -2px var(--primary); }
+  .scroll-progress > div { height: 100%; width: 100%; border-radius: 0 4px 4px 0; background: linear-gradient(90deg, var(--primary), var(--primary-strong), var(--pink)); transform-origin: 0 50%; transform: scaleX(0); transition: transform .12s linear; box-shadow: 0 0 12px -2px var(--primary); }
+
+  /* ═══════════ КНОПКА «НАВЕРХ» ═══════════ */
+  .to-top {
+    position: fixed; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+    width: 44px; height: 44px; border-radius: 16px; border: 1px solid var(--glass-border);
+    background: var(--glass); color: var(--text); cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.06);
+    opacity: 0; transform: translateY(14px) scale(.9); pointer-events: none;
+    transition: opacity .22s var(--ease-out), transform .22s var(--ease-out);
+  }
+  .to-top .ico { width: 18px; height: 18px; }
+  .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
+  .to-top:active { transform: scale(.92); }
+
+  /* клавиатурная навигация: заметный фокус только с клавиатуры */
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 8px; }
 
   /* ═══════════ ЛИПКАЯ ПАНЕЛЬ ФИЛЬТРОВ ═══════════ */
   .sticky-bar { position: sticky; top: -6px; z-index: 6; padding: 8px 0 10px; margin: -8px 0 2px; background: linear-gradient(180deg, var(--bg) 62%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: var(--r-md); animation: fadeUp .4s var(--ease-out) backwards; }
@@ -1218,13 +1373,6 @@
 
   /* пустые состояния */
   .empty { position: relative; }
-  .empty::before {
-    content: ''; display: block; width: 34px; height: 34px; margin: 0 auto 10px; opacity: .4;
-    background: currentColor;
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3 8 4v10l-8 4-8-4V7z'/%3E%3Cpath d='M4 7l8 4 8-4M12 11v10'/%3E%3C/svg%3E") center/contain no-repeat;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3 8 4v10l-8 4-8-4V7z'/%3E%3Cpath d='M4 7l8 4 8-4M12 11v10'/%3E%3C/svg%3E") center/contain no-repeat;
-    animation: floatY 3.4s ease-in-out infinite;
-  }
   @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
   /* каскад для прямых потомков панели */
@@ -1244,6 +1392,22 @@
     animation: none !important; transition: none !important;
   }
 
+  /* ═══════════ ИСТОРИЯ: СВЁРТЫВАНИЕ ═══════════ */
+  .log-toggle { cursor: pointer; }
+  .log-toggle .chev { display: inline-flex; opacity: .7; transition: transform .25s var(--ease-out); }
+
+  /* ═══════════ ДОСТИЖЕНИЯ: ПОДСКАЗКА «?» ═══════════ */
+  .ach[data-act] { cursor: pointer; }
+  .ach-more {
+    width: 26px; height: 26px; min-height: 0; padding: 0;
+    border-radius: 50%; background: var(--surface-2); color: var(--yellow);
+    border: 1px solid var(--border); font-size: 13px; font-weight: 900; flex: none;
+  }
+
+  /* ═══════════ АУКЦИОН ═══════════ */
+  .auc-log { display: flex; flex-direction: column; gap: 6px; max-height: 132px; overflow-y: auto; padding: 2px; }
+
+
 </style>
 </head>
 <body>
@@ -1254,6 +1418,11 @@
     <div class="splash-logo">💰</div>
     <h1>RESELLER<br>SIMULATOR</h1>
     <div class="splash-tagline" id="splashTagline">Покупай дешевле — продавай дороже.</div>
+    <div class="lang-switcher" id="splashLang" style="margin-bottom:12px">
+      <button class="lang-btn" data-act="lang" data-id="ru">🇷🇺 RU</button>
+      <button class="lang-btn" data-act="lang" data-id="en">🇬🇧 EN</button>
+      <button class="lang-btn" data-act="lang" data-id="es">🇪🇸 ES</button>
+    </div>
     <div class="device-switch" id="deviceSwitch" style="margin-bottom:14px">
       <button class="device-btn active" data-device="phone" onclick="setDevice('phone')"><span class="dev-ico" data-icon="phone"></span><span id="devPhoneLbl">Телефон</span></button>
       <button class="device-btn" data-device="desktop" onclick="setDevice('desktop')"><span class="dev-ico" data-icon="monitor"></span><span id="devDeskLbl">Компьютер</span></button>
@@ -1310,6 +1479,9 @@
 <div class="scroll-progress"><div id="scrollBar"></div></div>
 
 <main class="app-main" id="appMain"></main>
+
+<!-- кнопка «наверх» — появляется при долгой прокрутке -->
+<button id="toTop" class="to-top" aria-label="Наверх" data-icon="trendUp"></button>
 
 <!-- ═══════════════ NAV ═══════════════ -->
 <nav class="bottom-nav">
@@ -1371,7 +1543,7 @@ const I18N = {
     rep_next: "Следующий: {n}", rep_progress: "до уровня {n}",
     data_last_save: "Сохранено: {n}",
     help_1: "<b>Осмотр</b> — единственный способ узнать дефект и реальную цену.",
-    help_2: "<b>Торг</b> — в чате продавец согласится на сумму от ~70% цены; выше потолка он откажет.",
+    help_2: "<b>Торг</b> — продавцы и покупатели уступают редко и неохотно: обычно всего 1–6%. Смотрите тип продавца.",
     help_3: "<b>Репутация</b> открывает скидку поставщика, крупные лоты, чёрный рынок и тренды.",
     help_4: "<b>Заказы и квесты</b> — самый быстрый способ поднять баланс и репутацию.",
     help_5: "<b>Каждые 7 дней</b> проходит аукцион, а нанятый помощник сам продаёт ваши товары.",
@@ -1387,6 +1559,10 @@ pallet_title2: "Палета!", prestige_done: "Престиж!",
     sell_confirm: "Точно?", prof_log: "История действий", log_empty: "Пока пусто", log_day: "Д{n}",
     log_sold: "Продано: {n} за {m}", log_bought: "Куплено: {n} за {m}", log_stored: "На склад: {n}", log_assistant: "Помощник продал: {n}",    undo: "Вернуть",    accent_title: "Цвет интерфейса", market_none: "Ничего не найдено. Попробуйте изменить фильтры.", market_limit: "Это все доступные лоты на сегодня", cond_good: "хорошее",
     auction_head: "🔥 АУКЦИОН", auction_timer: "⏱ {n} сек", auction_leave: "Уйти",
+    auction_start: "Стартовая цена", auction_bot_bid: "Соперник: {n}", auction_back: "Вернуться в аукцион", sec_short: "{n} с", auction_you_bid: "Вы: {n}",
+    case_title: "Кейсы", case_desc: "Случайный товар: ценность может в разы превысить цену кейса", case_desc2: "Открываем...", case_won: "Ваш приз", case_value: "Ценность",
+    combo_toast: "🔥 Серия ×{n}", spark_title: "Доход за 14 дней", welcome_back: "💰 С возвращением!", welcome_earned: "Пока вас не было, склад заработал: {n}", hot_lot: "🔥 Горячий лот: {n}",
+    coll_title: "Альбом коллекционера",
     biz_until: "До {n}: {m}", unavailable: "Недоступно", stats_title: "Статистика",
     msg_inspect_defect: "Найден дефект!", msg_inspect_clean: "Всё чисто", msg_restored: "✨ Восстановлено!",
     msg_bought: "Куплено за {n}", msg_profit_up: "📈 +{n}", msg_profit_down: "📉 {n}",
@@ -1405,6 +1581,8 @@ pallet_title2: "Палета!", prestige_done: "Престиж!",
     motion_on: "Анимации", motion_off: "Без анимаций",
     rep_unlock_discount: "скидка поставщика", rep_unlock_bigLots: "крупные лоты", rep_unlock_black: "чёрный рынок", rep_unlock_prices: "цены и тренды",
     nav_market: "Рынок", nav_inv: "Товар", nav_orders: "Заказы", nav_biz: "Бизнес", nav_black: "Чёрный", nav_profile: "Профиль",
+    market_none_hint: "Попробуй другой фильтр или сбрось поиск", inv_empty_hint: "Купи лот на рынке — он появится здесь", storage_empty_hint: "Склад откроется, когда прокачаешь логистику", quests_empty_hint: "Задания появятся завтра", order_no_items_hint: "Заказы приходят каждый день", black_empty_hint: "Чёрный рынок пуст — загляни завтра", log_empty_hint: "Здесь появятся твои сделки", goals_none_hint: "Выполни цель сезона — и она попадёт сюда",
+    ticker_title: "Ход рынка", streak_chip: "дней подряд", empty_reset: "Сбросить фильтры",
     money_label: "Баланс", rep_label: "Репутация", biz_label: "Бизнес",
     sort_default: "По умолчанию", sort_price_asc: "💰 Цена ↑", sort_price_desc: "💰 Цена ↓", sort_pot: "🔥 Потенциал",
     search_ph: "Поиск...", found_label: "Найдено", lot1: "лот", lot2: "лота", lot5: "лотов",
@@ -1427,7 +1605,7 @@ pallet_title2: "Палета!", prestige_done: "Престиж!",
     storage_income: "Доход склада: {n}/день", goal_title: "Цель сезона", goal_left: "Осталось: {n}", goal_reward: "Награда: {n}",
     settings_title: "Настройки", sound_on: "Звук", sound_off: "Звук", music_on: "Музыка", music_off: "Музыка", haptic_on: "Вибро", haptic_off: "Вибро",
     export_btn: "Экспорт", import_btn: "Импорт",
-    st_earned: "Заработано", st_spent: "Потрачено", st_deals: "Сделок", st_best: "Лучшая", ach_title: "Достижения",
+    st_earned: "Заработано", st_spent: "Потрачено", st_deals: "Сделок", st_best: "Лучшая", ach_title: "Достижения", ach_how: "Как получить", ach_reward_lbl: "Награда",
     rep_title: "Уровень репутации", rep_unlocks: "Открыто: {n}", price_hist: "История", trends_title: "Тренды", trend_none: "Пока нет данных",
     black_title: "Чёрный рынок", black_locked: "Нужен рейтинг репутации {n}", black_risk: "риск", black_warn: "Товар могут конфисковать",
     story_title: "Случай", story_pick: "Выбери, что делать", story_skip: "Пропустить",
@@ -1447,7 +1625,10 @@ pallet_title2: "Палета!", prestige_done: "Престиж!",
     quiz_q3: "Аналитика: трекеры и рекламные SDK не используются.", quiz_q4: "Иконки: открытые 3D-иконки от Icons8 (Fluency).",
     quiz_q5: "Права: прогресс можно сбросить в настройках или очистить данные браузера.",
     quiz_updated: "Обновлено: {n}",
-    splash_tagline: "Покупай дешевле — продавай дороже.", btn_start: "Играть", btn_privacy: "Политика конфиденциальности", prog_text: "Прогресс до 100 000 ₽", filter_all: "Все", filter_tech: "Техника", filter_home: "Дом", filter_sport: "Спорт", filter_hobby: "Хобби", filter_fashion: "Мода", btn_inspect: "Осмотр", btn_buy: "Написать", btn_sell: "Продать", btn_repair: "Починить", btn_restore: "Восстановить", btn_next_day: "Следующий день →", btn_order: "Выполнить", market_ask: "Просят", market_real: "Реальная цена", market_est: "Оценка", market_pot: "Потенциал", inv_bought: "Куплено", inv_empty: "Пусто.", next_day_rent: "(аренда {r})", order_no_items: "Заказов нет.", order_need_item: "Нужен товар", chat_seller: "Продавец", chat_online: "в сети", chat_offline: "оффлайн", chat_take: "Взять за", chat_give: "Продать за", chat_custom_price: "Своя цена", chat_leave: "Уйти", chat_send: "Предложить", chat_req: "Запросить", chat_kb_ask: "Сейчас просят", chat_kb_give: "Сейчас дают", set_theme: "Тема", set_light: "Светлая", set_dark: "Тёмная", set_lang: "Язык", set_reset: "Сбросить", prestige_title: "Престиж", prestige_desc: "Продайте за 5M для множителя ×{m}.", prestige_btn: "Продать бизнес" },
+    splash_tagline: "Покупай дешевле — продавай дороже.", btn_start: "Играть", btn_privacy: "Политика конфиденциальности", prog_text: "Прогресс до 100 000 ₽", filter_all: "Все", filter_tech: "Техника", filter_home: "Дом", filter_sport: "Спорт", filter_hobby: "Хобби", filter_fashion: "Мода", btn_inspect: "Осмотр", btn_buy: "Написать", btn_sell: "Продать", btn_repair: "Починить", btn_restore: "Восстановить", btn_next_day: "Следующий день →", btn_order: "Выполнить", market_ask: "Просят", market_real: "Реальная цена", market_est: "Оценка", market_pot: "Потенциал", inv_bought: "Куплено", inv_empty: "Пусто.", next_day_rent: "(аренда {r})", order_no_items: "Заказов нет.", order_need_item: "Нужен товар", chat_seller: "Продавец", chat_online: "в сети", chat_offline: "оффлайн", chat_take: "Взять за", chat_give: "Продать за", chat_custom_price: "Своя цена", chat_leave: "Уйти", chat_send: "Предложить", chat_req: "Запросить", chat_kb_ask: "Сейчас просят", chat_kb_give: "Сейчас дают", set_theme: "Тема", set_light: "Светлая", set_dark: "Тёмная", set_lang: "Язык", set_reset: "Сбросить", prestige_title: "Престиж", prestige_desc: "Продайте за 5M для множителя ×{m}.", prestige_btn: "Продать бизнес",
+    auc_start: "Стартовая ставка", auc_your_turn: "Ваш ход — перебейте ставку!", auc_think: "Соперники обдумывают ставку…", auc_you: "Вы", auc_out: "Вы вышли из торгов",
+    ach_how: "Как получить", ach_help_title: "Как получить достижения", ach_done: "Получено", ach_locked: "Ещё не получено", ach_points: "Очки навыков", ach_reward: "Награда", ach_status: "Статус",
+    log_count: "Записей: {n}" },
   en: {
     dev_title: "Device", dev_phone: "Phone", dev_desktop: "Desktop",
     prof_records: "Records", prof_goals: "Goals", prof_data: "Data", prof_help: "About the game", goals_none: "No completed goals yet",
@@ -1458,7 +1639,7 @@ pallet_title2: "Палета!", prestige_done: "Престиж!",
     rep_next: "Next: {n}", rep_progress: "{n} to go",
     data_last_save: "Saved: {n}",
     help_1: "<b>Inspect</b> — the only way to find a defect and the real price.",
-    help_2: "<b>Negotiate</b> — sellers accept from ~70% of the price; above the ceiling they refuse.",
+    help_2: "<b>Negotiate</b> — sellers and buyers rarely give in; expect only a few percent off. Watch the seller type.",
     help_3: "<b>Reputation</b> unlocks supplier discounts, big lots, the black market and trends.",
     help_4: "<b>Orders and quests</b> are the fastest way to grow your balance and reputation.",
     help_5: "<b>Every 7 days</b> there's an auction, and a hired assistant sells your items for you.",
@@ -1474,6 +1655,10 @@ pallet_title2: "Pallet!", prestige_done: "Prestige!",
     sell_confirm: "Sure?", prof_log: "Action history", log_empty: "Nothing yet", log_day: "D{n}",
     log_sold: "Sold: {n} for {m}", log_bought: "Bought: {n} for {m}", log_stored: "Stored: {n}", log_assistant: "Assistant sold: {n}",    undo: "Undo",    accent_title: "Interface color", market_none: "Nothing found. Try changing the filters.", market_limit: "That's every lot available today", cond_good: "good",
     auction_head: "🔥 AUCTION", auction_timer: "⏱ {n}s", auction_leave: "Leave",
+    auction_start: "Starting price", auction_bot_bid: "Rival: {n}", auction_back: "Return to auction", sec_short: "{n}s", auction_you_bid: "You: {n}",
+    case_title: "Cases", case_desc: "A random item: its value can multiply the case price", case_desc2: "Opening...", case_won: "Your prize", case_value: "Value",
+    combo_toast: "🔥 Combo ×{n}", spark_title: "Earnings, 14 days", welcome_back: "💰 Welcome back!", welcome_earned: "Your storage earned while away: {n}", hot_lot: "🔥 Hot lot: {n}",
+    coll_title: "Collection album",
     biz_until: "To {n}: {m}", unavailable: "Unavailable", stats_title: "Statistics",
     msg_inspect_defect: "Defect found!", msg_inspect_clean: "All clean", msg_restored: "✨ Restored!",
     msg_bought: "Bought for {n}", msg_profit_up: "📈 +{n}", msg_profit_down: "📉 {n}",
@@ -1492,6 +1677,8 @@ pallet_title2: "Pallet!", prestige_done: "Prestige!",
     motion_on: "Motion", motion_off: "No motion",
     rep_unlock_discount: "supplier discount", rep_unlock_bigLots: "big lots", rep_unlock_black: "black market", rep_unlock_prices: "prices & trends",
     nav_market: "Market", nav_inv: "Items", nav_orders: "Orders", nav_biz: "Business", nav_black: "Black", nav_profile: "Profile",
+    market_none_hint: "Try another filter or clear the search", inv_empty_hint: "Buy a lot on the market — it will appear here", storage_empty_hint: "Storage unlocks when you upgrade logistics", quests_empty_hint: "New quests arrive tomorrow", order_no_items_hint: "Orders show up every day", black_empty_hint: "The black market is empty — check back tomorrow", log_empty_hint: "Your deals will be listed here", goals_none_hint: "Complete a season goal and it lands here",
+    ticker_title: "Market moves", streak_chip: "day streak", empty_reset: "Reset filters",
     money_label: "Balance", rep_label: "Reputation", biz_label: "Business",
     sort_default: "Default", sort_price_asc: "💰 Price ↑", sort_price_desc: "💰 Price ↓", sort_pot: "🔥 Potential",
     search_ph: "Search...", found_label: "Found", lot1: "lot", lot2: "lots", lot5: "lots",
@@ -1514,7 +1701,7 @@ pallet_title2: "Pallet!", prestige_done: "Prestige!",
     storage_income: "Storage income: {n}/day", goal_title: "Season goal", goal_left: "Left: {n}", goal_reward: "Reward: {n}",
     settings_title: "Settings", sound_on: "Sound", sound_off: "Sound", music_on: "Music", music_off: "Music", haptic_on: "Haptic", haptic_off: "Haptic",
     export_btn: "Export", import_btn: "Import",
-    st_earned: "Earned", st_spent: "Spent", st_deals: "Deals", st_best: "Best", ach_title: "Achievements",
+    st_earned: "Earned", st_spent: "Spent", st_deals: "Deals", st_best: "Best", ach_title: "Achievements", ach_how: "How to get", ach_reward_lbl: "Reward",
     rep_title: "Reputation tier", rep_unlocks: "Unlocked: {n}", price_hist: "History", trends_title: "Trends", trend_none: "No data yet",
     black_title: "Black market", black_locked: "Requires reputation tier {n}", black_risk: "risk", black_warn: "The item may be seized",
     story_title: "Story", story_pick: "Choose what to do", story_skip: "Skip",
@@ -1536,7 +1723,10 @@ pallet_title2: "Pallet!", prestige_done: "Prestige!",
     quiz_q4: "Icons: open 3D icons by Icons8 (Fluency).",
     quiz_q5: "Rights: you can reset progress in settings or clear your browser data.",
     quiz_updated: "Updated: {n}",
-    splash_tagline: "Buy low — sell high.", btn_start: "Play", btn_privacy: "Privacy", prog_text: "To $100,000", filter_all: "All", filter_tech: "Tech", filter_home: "Home", filter_sport: "Sport", filter_hobby: "Hobby", filter_fashion: "Fashion", btn_inspect: "Inspect", btn_buy: "Text", btn_sell: "Sell", btn_repair: "Repair", btn_restore: "Restore", btn_next_day: "Next Day →", btn_order: "Complete", market_ask: "Asking", market_real: "Real", market_est: "Estimate", market_pot: "Potential", inv_bought: "Bought", inv_empty: "Empty.", next_day_rent: "(rent {r})", order_no_items: "No orders.", order_need_item: "Needs item", chat_seller: "Seller", chat_online: "online", chat_offline: "offline", chat_take: "Take for", chat_give: "Sell for", chat_custom_price: "Custom", chat_leave: "Leave", chat_send: "Offer", chat_req: "Request", chat_kb_ask: "Asking", chat_kb_give: "Offering", set_theme: "Theme", set_light: "Light", set_dark: "Dark", set_lang: "Language", set_reset: "Reset", prestige_title: "Prestige", prestige_desc: "Sell for $5M for ×{m}.", prestige_btn: "Sell Business" },
+    splash_tagline: "Buy low — sell high.", btn_start: "Play", btn_privacy: "Privacy", prog_text: "To $100,000", filter_all: "All", filter_tech: "Tech", filter_home: "Home", filter_sport: "Sport", filter_hobby: "Hobby", filter_fashion: "Fashion", btn_inspect: "Inspect", btn_buy: "Text", btn_sell: "Sell", btn_repair: "Repair", btn_restore: "Restore", btn_next_day: "Next Day →", btn_order: "Complete", market_ask: "Asking", market_real: "Real", market_est: "Estimate", market_pot: "Potential", inv_bought: "Bought", inv_empty: "Empty.", next_day_rent: "(rent {r})", order_no_items: "No orders.", order_need_item: "Needs item", chat_seller: "Seller", chat_online: "online", chat_offline: "offline", chat_take: "Take for", chat_give: "Sell for", chat_custom_price: "Custom", chat_leave: "Leave", chat_send: "Offer", chat_req: "Request", chat_kb_ask: "Asking", chat_kb_give: "Offering", set_theme: "Theme", set_light: "Light", set_dark: "Dark", set_lang: "Language", set_reset: "Reset", prestige_title: "Prestige", prestige_desc: "Sell for $5M for ×{m}.", prestige_btn: "Sell Business",
+    auc_start: "Starting bid", auc_your_turn: "Your turn — outbid them!", auc_think: "Rivals are thinking…", auc_you: "You", auc_out: "You left the bidding",
+    ach_how: "How to unlock", ach_help_title: "How to unlock achievements", ach_done: "Unlocked", ach_locked: "Not yet unlocked", ach_points: "Skill points", ach_reward: "Reward", ach_status: "Status",
+    log_count: "Entries: {n}" },
   es: {
     dev_title: "Dispositivo", dev_phone: "Teléfono", dev_desktop: "Ordenador",
     prof_records: "Récords", prof_goals: "Metas", prof_data: "Datos", prof_help: "Sobre el juego", goals_none: "Aún no hay metas completadas",
@@ -1547,7 +1737,7 @@ pallet_title2: "Pallet!", prestige_done: "Prestige!",
     rep_next: "Siguiente: {n}", rep_progress: "faltan {n}",
     data_last_save: "Guardado: {n}",
     help_1: "<b>Inspeccionar</b> es la única forma de detectar defectos y el precio real.",
-    help_2: "<b>Negociar</b> — el vendedor acepta desde ~70% del precio; por encima del límite se niega.",
+    help_2: "<b>Negociar</b> — vendedores y compradores ceden rara vez; cuenta con un descuento mínimo. Fíjate en el tipo de vendedor.",
     help_3: "<b>La reputación</b> desbloquea descuentos, lotes grandes, mercado negro y tendencias.",
     help_4: "<b>Pedidos y misiones</b> son la forma más rápida de crecer tu saldo y reputación.",
     help_5: "<b>Cada 7 días</b> hay subasta y un asistente contratado vende por ti.",
@@ -1563,6 +1753,10 @@ pallet_title2: "¡Palé!", prestige_done: "¡Prestigio!",
     sell_confirm: "¿Seguro?", prof_log: "Historial de acciones", log_empty: "Aún vacío", log_day: "D{n}",
     log_sold: "Vendido: {n} por {m}", log_bought: "Comprado: {n} por {m}", log_stored: "Almacén: {n}", log_assistant: "El asistente vendió: {n}",    undo: "Deshacer",    accent_title: "Color de la interfaz", market_none: "No se encontró nada. Cambia los filtros.", market_limit: "Ese es todos los lotes disponibles hoy", cond_good: "bueno",
     auction_head: "🔥 SUBASTA", auction_timer: "⏱ {n}s", auction_leave: "Salir",
+    auction_start: "Precio inicial", auction_bot_bid: "Rival: {n}", auction_back: "Volver a la subasta", sec_short: "{n}s", auction_you_bid: "Tú: {n}",
+    case_title: "Cajas", case_desc: "Un artículo al azar: puede valer mucho más que la caja", case_desc2: "Abriendo...", case_won: "Tu premio", case_value: "Valor",
+    combo_toast: "🔥 Combo ×{n}", spark_title: "Ingresos, 14 días", welcome_back: "💰 ¡Bienvenido!", welcome_earned: "Tu almacén ganó mientras no estabas: {n}", hot_lot: "🔥 Lote caliente: {n}",
+    coll_title: "Álbum de colección",
     biz_until: "Hasta {n}: {m}", unavailable: "No disponible", stats_title: "Estadísticas",
     msg_inspect_defect: "¡Defecto encontrado!", msg_inspect_clean: "Todo limpio", msg_restored: "✨ ¡Restaurado!",
     msg_bought: "Comprado por {n}", msg_profit_up: "📈 +{n}", msg_profit_down: "📉 {n}",
@@ -1581,6 +1775,8 @@ pallet_title2: "¡Palé!", prestige_done: "¡Prestigio!",
     motion_on: "Animación", motion_off: "Sin animación",
     rep_unlock_discount: "descuento de proveedor", rep_unlock_bigLots: "lotes grandes", rep_unlock_black: "mercado negro", rep_unlock_prices: "precios y tendencias",
     nav_market: "Mercado", nav_inv: "Artículos", nav_orders: "Pedidos", nav_biz: "Negocio", nav_black: "Negro", nav_profile: "Perfil",
+    market_none_hint: "Prueba otro filtro o borra la búsqueda", inv_empty_hint: "Compra un lote en el mercado y aparecerá aquí", storage_empty_hint: "El almacén se abre al mejorar logística", quests_empty_hint: "Mañana llegan misiones nuevas", order_no_items_hint: "Los pedidos llegan cada día", black_empty_hint: "El mercado negro está vacío — vuelve mañana", log_empty_hint: "Tus ventas aparecerán aquí", goals_none_hint: "Completa una meta y aparecerá aquí",
+    ticker_title: "Movimiento del mercado", streak_chip: "días seguidos", empty_reset: "Quitar filtros",
     money_label: "Saldo", rep_label: "Reputación", biz_label: "Negocio",
     sort_default: "Por defecto", sort_price_asc: "💰 Precio ↑", sort_price_desc: "💰 Precio ↓", sort_pot: "🔥 Potencial",
     search_ph: "Buscar...", found_label: "Encontrados", lot1: "lote", lot2: "lotes", lot5: "lotes",
@@ -1603,7 +1799,7 @@ pallet_title2: "¡Palé!", prestige_done: "¡Prestigio!",
     storage_income: "Ingreso del almacén: {n}/día", goal_title: "Meta de temporada", goal_left: "Queda: {n}", goal_reward: "Recompensa: {n}",
     settings_title: "Ajustes", sound_on: "Sonido", sound_off: "Sonido", music_on: "Música", music_off: "Música", haptic_on: "Vibración", haptic_off: "Vibración",
     export_btn: "Exportar", import_btn: "Importar",
-    st_earned: "Ganado", st_spent: "Gastado", st_deals: "Ventas", st_best: "Mejor", ach_title: "Logros",
+    st_earned: "Ganado", st_spent: "Gastado", st_deals: "Ventas", st_best: "Mejor", ach_title: "Logros", ach_how: "Cómo obtener", ach_reward_lbl: "Recompensa",
     rep_title: "Nivel de reputación", rep_unlocks: "Desbloqueado: {n}", price_hist: "Historial", trends_title: "Tendencias", trend_none: "Sin datos aún",
     black_title: "Mercado negro", black_locked: "Necesitas reputación {n}", black_risk: "riesgo", black_warn: "Pueden confiscar el artículo",
     story_title: "Historia", story_pick: "Elige qué hacer", story_skip: "Saltar",
@@ -1625,7 +1821,10 @@ pallet_title2: "¡Palé!", prestige_done: "¡Prestigio!",
     quiz_q4: "Iconos: iconos 3D abiertos de Icons8 (Fluency).",
     quiz_q5: "Derechos: puedes reiniciar el progreso en los ajustes o borrar los datos del navegador.",
     quiz_updated: "Actualizado: {n}",
-    splash_tagline: "Compra barato — vende caro.", btn_start: "Jugar", btn_privacy: "Privacidad", prog_text: "A 100 000 ₽", filter_all: "Todo", filter_tech: "Tecnología", filter_home: "Hogar", filter_sport: "Deporte", filter_hobby: "Pasatiempo", filter_fashion: "Moda", btn_inspect: "Revisar", btn_buy: "Escribir", btn_sell: "Vender", btn_repair: "Reparar", btn_restore: "Restaurar", btn_next_day: "Siguiente →", btn_order: "Completar", market_ask: "Piden", market_real: "Precio", market_est: "Estimación", market_pot: "Potencial", inv_bought: "Comprado", inv_empty: "Vacío.", next_day_rent: "(alquiler {r})", order_no_items: "Sin pedidos.", order_need_item: "Necesita", chat_seller: "Vendedor", chat_online: "en línea", chat_offline: "desconectado", chat_take: "Tomar por", chat_give: "Vender por", chat_custom_price: "Precio", chat_leave: "Salir", chat_send: "Ofrecer", chat_req: "Solicitar", chat_kb_ask: "Piden", chat_kb_give: "Ofrecen", set_theme: "Tema", set_light: "Claro", set_dark: "Oscuro", set_lang: "Idioma", set_reset: "Reiniciar", prestige_title: "Prestigio", prestige_desc: "Vende por 5M para ×{m}.", prestige_btn: "Vender Negocio" }
+    splash_tagline: "Compra barato — vende caro.", btn_start: "Jugar", btn_privacy: "Privacidad", prog_text: "A 100 000 ₽", filter_all: "Todo", filter_tech: "Tecnología", filter_home: "Hogar", filter_sport: "Deporte", filter_hobby: "Pasatiempo", filter_fashion: "Moda", btn_inspect: "Revisar", btn_buy: "Escribir", btn_sell: "Vender", btn_repair: "Reparar", btn_restore: "Restaurar", btn_next_day: "Siguiente →", btn_order: "Completar", market_ask: "Piden", market_real: "Precio", market_est: "Estimación", market_pot: "Potencial", inv_bought: "Comprado", inv_empty: "Vacío.", next_day_rent: "(alquiler {r})", order_no_items: "Sin pedidos.", order_need_item: "Necesita", chat_seller: "Vendedor", chat_online: "en línea", chat_offline: "desconectado", chat_take: "Tomar por", chat_give: "Vender por", chat_custom_price: "Precio", chat_leave: "Salir", chat_send: "Ofrecer", chat_req: "Solicitar", chat_kb_ask: "Piden", chat_kb_give: "Ofrecen", set_theme: "Tema", set_light: "Claro", set_dark: "Oscuro", set_lang: "Idioma", set_reset: "Reiniciar", prestige_title: "Prestigio", prestige_desc: "Vende por 5M para ×{m}.", prestige_btn: "Vender Negocio",
+    auc_start: "Puja inicial", auc_your_turn: "¡Tu turno: supera la puja!", auc_think: "Los rivales están pensando…", auc_you: "Tú", auc_out: "Saliste de la subasta",
+    ach_how: "Cómo desbloquearlo", ach_help_title: "Cómo desbloquear logros", ach_done: "Desbloqueado", ach_locked: "Aún no desbloqueado", ach_points: "Puntos de habilidad", ach_reward: "Recompensa", ach_status: "Estado",
+    log_count: "Registros: {n}" }
 };
 function t(key, vars) {
   let str = (I18N[S.lang] && I18N[S.lang][key]) || I18N.ru[key] || key;
@@ -1684,6 +1883,7 @@ const ICONS = {
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   check: '<path d="m5 13 4 4 10-10"/>',
+  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
   flame: '<path d="M12 3c3 4 6 5.5 6 9.5A6 6 0 0 1 6 13c0-2 1-3.5 2.5-5 .5 1.5 1.5 2.5 2.5 2.5C11 8 10 6 12 3z"/>',
   diamond: '<path d="M12 3l9 9-9 9-9-9z"/>',
@@ -1754,10 +1954,16 @@ function paintStaticIcons() {
     if (name && ICONS[name]) { el.innerHTML = ico(name); el.dataset.painted = '1'; }
   });
 }
+const _icoCache = new Map();
 function ico(name, cls) {
-  const p = ICONS[name];
-  if (!p) return '';
-  return `<svg class="ico ${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const key = name + '|' + (cls || '');
+  let v = _icoCache.get(key);
+  if (v === undefined) {
+    const p = ICONS[name];
+    v = p ? `<svg class="ico ${cls || ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>` : '';
+    _icoCache.set(key, v);
+  }
+  return v;
 }
 
 const PHONE_BRANDS = {
@@ -1882,24 +2088,35 @@ const STORIES = [
   { id: 'newbox', tag: '✨', tagText: { ru: 'новое', en: 'sealed', es: 'nuevo' }, priceMult: 1.15, trueMult: 1.20, text: { ru: 'Заводская упаковка', en: 'Factory sealed', es: 'En caja original' } },
   { id: 'warranty', tag: '📄', tagText: { ru: 'гарантия', en: 'warranty', es: 'garantía' }, priceMult: 1.10, trueMult: 1.10, text: { ru: 'С гарантией', en: 'With warranty', es: 'Con garantía' } }
 ];
+/* Торг усложнён: продавцы почти не уступают (1–6%) и быстро теряют терпение.
+   Заметную скидку даёт только «торопится» — и то редко. */
 const SELLER_TYPES = [
-  { id: 'friendly', emoji: '😊', name: { ru: 'Дружелюбный', en: 'Friendly', es: 'Amable' }, maxDiscount: 0.18, patience: 3 },
-  { id: 'firm', emoji: '😐', name: { ru: 'Твёрдый', en: 'Firm', es: 'Firme' }, maxDiscount: 0.06, patience: 2 },
-  { id: 'desperate', emoji: '😰', name: { ru: 'Торопится', en: 'In a hurry', es: 'Con prisa' }, maxDiscount: 0.28, patience: 3 },
-  { id: 'greedy', emoji: '🤑', name: { ru: 'Жадный', en: 'Greedy', es: 'Avaro' }, maxDiscount: 0.04, patience: 1 }
+  /* торговаться почти бесполезно: максимум 1 уступка, скидки крошечные */
+  { id: 'friendly', emoji: '😊', name: { ru: 'Дружелюбный', en: 'Friendly', es: 'Amable' }, maxDiscount: 0.03, patience: 1 },
+  { id: 'firm', emoji: '😐', name: { ru: 'Твёрдый', en: 'Firm', es: 'Firme' }, maxDiscount: 0.01, patience: 1 },
+  { id: 'desperate', emoji: '😰', name: { ru: 'Торопится', en: 'In a hurry', es: 'Con prisa' }, maxDiscount: 0.08, patience: 2 },
+  { id: 'greedy', emoji: '🤑', name: { ru: 'Жадный', en: 'Greedy', es: 'Avaro' }, maxDiscount: 0.005, patience: 1 }
 ];
+/* Покупатели скупее: реже поднимают цену и на меньшую величину */
 const BUYERS = [
-  { id: 'regular', emoji: '🤝', name: { ru: 'Постоянный', en: 'Regular', es: ' habitual' }, info: { ru: 'Платит хорошо', en: 'Pays well', es: 'Paga bien' }, priceMult: 1.10, maxRaises: 1, raiseFactor: 1.18 },
-  { id: 'hurry', emoji: '😤', name: { ru: 'Торопыга', en: 'Hurrier', es: 'Prisa' }, info: { ru: 'Сразу максимум', en: 'Max offer', es: 'Oferta máxima' }, priceMult: 1.0, maxRaises: 0, raiseFactor: 1.0 },
-  { id: 'expert', emoji: '🧐', name: { ru: 'Эксперт', en: 'Expert', es: 'Experto' }, info: { ru: 'Видит дефекты', en: 'Spots defects', es: 'Detecta defectos' }, priceMult: 0.90, maxRaises: 1, raiseFactor: 1.10, detectsDefects: true },
-  { id: 'newbie', emoji: '💰', name: { ru: 'Новичок', en: 'Newbie', es: 'Novato' }, info: { ru: 'Переплачивает', en: 'Overpays', es: 'Paga de más' }, priceMult: 1.28, maxRaises: 2, raiseFactor: 1.22, weight: 0.6 },
-  { id: 'scammer', emoji: '😈', name: { ru: 'Мошенник', en: 'Scammer', es: 'Estafador' }, info: { ru: 'Фальшивки', en: 'Fake bills', es: 'Billetes falsos' }, priceMult: 0.95, maxRaises: 1, raiseFactor: 1.10, isScammer: true }
+  /* очень редко уступают: у большинства ноль повышений, сдвиг +3% */
+  { id: 'regular', emoji: '🤝', name: { ru: 'Постоянный', en: 'Regular', es: 'Habitual' }, info: { ru: 'Платит хорошо', en: 'Pays well', es: 'Paga bien' }, priceMult: 1.02, maxRaises: 0, raiseFactor: 1.03 },
+  { id: 'hurry', emoji: '😤', name: { ru: 'Торопыга', en: 'Hurrier', es: 'Prisa' }, info: { ru: 'Сразу максимум', en: 'Max offer', es: 'Oferta máxima' }, priceMult: 0.92, maxRaises: 0, raiseFactor: 1.0 },
+  { id: 'expert', emoji: '🧐', name: { ru: 'Эксперт', en: 'Expert', es: 'Experto' }, info: { ru: 'Видит дефекты', en: 'Spots defects', es: 'Detecta defectos' }, priceMult: 0.80, maxRaises: 0, raiseFactor: 1.03, detectsDefects: true },
+  { id: 'newbie', emoji: '💰', name: { ru: 'Новичок', en: 'Newbie', es: 'Novato' }, info: { ru: 'Переплачивает', en: 'Overpays', es: 'Paga de más' }, priceMult: 1.12, maxRaises: 1, raiseFactor: 1.06, weight: 0.6 },
+  { id: 'scammer', emoji: '😈', name: { ru: 'Мошенник', en: 'Scammer', es: 'Estafador' }, info: { ru: 'Фальшивки', en: 'Fake bills', es: 'Billetes falsos' }, priceMult: 0.88, maxRaises: 0, raiseFactor: 1.03, isScammer: true }
 ];
 const ACH_ICON = {
   first_sale: 'trophy', ten_sales: 'box', fifty_sales: 'archive', hundred_sales: 'cube', big_deal: 'diamond',
   no_defects_5: 'shield', first_order: 'check', first_repair: 'wrench', perfect_repair: 'sparkle', million: 'trophy',
   rep_max: 'star', black_bought: 'dice', pallet_first: 'archive', biz2: 'shop', biz4: 'building',
-  prestige1: 'exchange', assistant: 'user', goal_done: 'target', story_done: 'dice', trends: 'trendUp'
+  prestige1: 'exchange', assistant: 'user', goal_done: 'target', story_done: 'dice', trends: 'trendUp',
+  day_30: 'calendar', day_100: 'history', level_10: 'trendUp', level_20: 'rocket', rich_100k: 'wallet',
+  deals_200: 'exchange', clean_10: 'shield', big_deal_100k: 'diamond', auction_win: 'scales', debt_free: 'bank',
+  assistant_3: 'user', transport_max: 'truck', max_inventory: 'bag', prestige_3: 'exchange', quest_day: 'clipboard', story_lucky: 'dice',
+  deals_25: 'exchange', order_10: 'check', auction_5: 'scales', storage_use: 'box', pallet_3: 'archive',
+  defect_10: 'shield', repair_10: 'wrench', day_earn_100k: 'trendUp', skill_3: 'star', streak_7: 'calendar',
+  coll_20: 'archive', coll_all: 'bag'
 };
 const ACHIEVEMENTS = [
   { id: 'first_sale', emoji: '🎉', name: { ru: 'Первая сделка', en: 'First deal', es: 'Primera venta' }, desc: { ru: 'Продать товар', en: 'Sell an item', es: 'Vender un artículo' }, points: 1, reward: { money: 2000 } },
@@ -1921,7 +2138,35 @@ const ACHIEVEMENTS = [
   { id: 'assistant', emoji: '🧑‍💼', name: { ru: 'Менеджер', en: 'Manager', es: 'Gerente' }, desc: { ru: 'Нанять помощника', en: 'Hire an assistant', es: 'Contratar un asistente' }, points: 1, reward: { money: 20000 } },
   { id: 'goal_done', emoji: '🎯', name: { ru: 'Цель', en: 'Goal getter', es: 'Objetivo' }, desc: { ru: 'Выполнить цель сезона', en: 'Complete a season goal', es: 'Completar una meta de temporada' }, points: 1, reward: { money: 30000 } },
   { id: 'story_done', emoji: '🎲', name: { ru: 'Фортуна', en: 'Fortune', es: 'Fortuna' }, desc: { ru: '5 сюжетных сделок', en: '5 story deals', es: '5 tratos de historia' }, points: 1, reward: { money: 25000 } },
-  { id: 'trends', emoji: '📈', name: { ru: 'Аналитик', en: 'Analyst', es: 'Analista' }, desc: { ru: 'Поймать тренд', en: 'Catch a price trend', es: 'Detectar una tendencia' }, points: 1, reward: { money: 15000 } }
+  { id: 'trends', emoji: '📈', name: { ru: 'Аналитик', en: 'Analyst', es: 'Analista' }, desc: { ru: 'Поймать тренд', en: 'Catch a price trend', es: 'Detectar una tendencia' }, points: 1, reward: { money: 15000 } },
+  { id: 'day_30', emoji: '📅', name: { ru: 'Ветеран', en: 'Veteran', es: 'Veterano' }, desc: { ru: 'Провести 30 дней в игре', en: 'Play 30 days', es: 'Juega 30 días' }, points: 1, reward: { money: 20000 } },
+  { id: 'day_100', emoji: '🗓️', name: { ru: 'Старожил', en: 'Old-timer', es: 'Antiguo' }, desc: { ru: 'Провести 100 дней в игре', en: 'Play 100 days', es: 'Juega 100 días' }, points: 2, reward: { money: 60000 } },
+  { id: 'level_10', emoji: '⬆️', name: { ru: 'Профи', en: 'Pro', es: 'Pro' }, desc: { ru: 'Достичь 10 уровня', en: 'Reach level 10', es: 'Alcanza el nivel 10' }, points: 1, reward: { money: 15000 } },
+  { id: 'level_20', emoji: '🚀', name: { ru: 'Карьерист', en: 'Climber', es: 'Ambicioso' }, desc: { ru: 'Достичь 20 уровня', en: 'Reach level 20', es: 'Alcanza el nivel 20' }, points: 2, reward: { money: 50000 } },
+  { id: 'rich_100k', emoji: '💼', name: { ru: 'Первые 100K', en: 'First 100K', es: 'Primeros 100 mil' }, desc: { ru: '100 000 на счету', en: '100,000 in the bank', es: '100 000 en el banco' }, points: 1, reward: { money: 10000 } },
+  { id: 'deals_200', emoji: '🔁', name: { ru: '200 сделок', en: '200 deals', es: '200 ventas' }, desc: { ru: 'Совершить 200 сделок', en: 'Make 200 deals', es: 'Haz 200 ventas' }, points: 2, reward: { money: 200000 } },
+  { id: 'clean_10', emoji: '🧽', name: { ru: 'Чистюля', en: 'Spotless', es: 'Impecable' }, desc: { ru: '10 чистых сделок подряд', en: '10 clean deals in a row', es: '10 ventas limpias seguidas' }, points: 2, reward: { money: 30000 } },
+  { id: 'big_deal_100k', emoji: '🐋', name: { ru: 'Кит', en: 'Whale', es: 'Ballena' }, desc: { ru: '100 000 прибыли с одной сделки', en: '100,000 profit in one deal', es: '100 000 de ganancia en una venta' }, points: 3, reward: { money: 100000 } },
+  { id: 'auction_win', emoji: '🔨', name: { ru: 'Молоток', en: 'Hammer', es: 'Martillo' }, desc: { ru: 'Выиграть аукцион', en: 'Win an auction', es: 'Gana una subasta' }, points: 1, reward: { money: 20000 } },
+  { id: 'debt_free', emoji: '🧾', name: { ru: 'Без долгов', en: 'Debt-free', es: 'Sin deudas' }, desc: { ru: 'Полностью погасить кредит', en: 'Repay a loan in full', es: 'Paga un préstamo entero' }, points: 1, reward: { money: 10000 } },
+  { id: 'assistant_3', emoji: '🕴️', name: { ru: 'Команда', en: 'The crew', es: 'El equipo' }, desc: { ru: 'Нанять агента (3 уровень)', en: 'Hire the agent (level 3)', es: 'Contrata al agente (nivel 3)' }, points: 2, reward: { money: 60000 } },
+  { id: 'transport_max', emoji: '🚚', name: { ru: 'Логист', en: 'Logistician', es: 'Logístico' }, desc: { ru: 'Купить газель', en: 'Buy the truck', es: 'Compra la camioneta' }, points: 1, reward: { money: 30000 } },
+  { id: 'max_inventory', emoji: '🎒', name: { ru: 'Сундуки', en: 'Deep pockets', es: 'Bolsillos profundos' }, desc: { ru: 'Прокачать инвентарь до максимума', en: 'Max out the inventory upgrade', es: 'Mejora el inventario al máximo' }, points: 1, reward: { money: 25000 } },
+  { id: 'prestige_3', emoji: '♾️', name: { ru: 'Третья жизнь', en: 'Third life', es: 'Tercera vida' }, desc: { ru: 'Сделать престиж 3 раза', en: 'Prestige 3 times', es: 'Haz prestigio 3 veces' }, points: 3, reward: { money: 500000 } },
+  { id: 'quest_day', emoji: '📋', name: { ru: 'Исполнительный', en: 'Executor', es: 'Cumplidor' }, desc: { ru: 'Выполнить все квесты за день', en: 'Complete all daily quests in one day', es: 'Completa todas las misiones en un día' }, points: 1, reward: { money: 15000 } },
+  { id: 'story_lucky', emoji: '🍀', name: { ru: 'Везунчик', en: 'Lucky', es: 'Afortunado' }, desc: { ru: 'Сорвать куш в сюжетном случае', en: 'Win big in a story event', es: 'Gana mucho en un suceso' }, points: 1, reward: { money: 12000 } },
+  { id: 'deals_25', emoji: '📦', name: { ru: '25 сделок', en: '25 deals', es: '25 ventas' }, desc: { ru: 'Продать 25', en: 'Sell 25 items', es: 'Vender 25 artículos' }, points: 1, reward: { money: 12000 } },
+  { id: 'order_10', emoji: '📋', name: { ru: 'Поставщик', en: 'Supplier', es: 'Proveedor' }, desc: { ru: 'Выполнить 10 заказов', en: 'Complete 10 orders', es: 'Completa 10 pedidos' }, points: 2, reward: { money: 40000 } },
+  { id: 'auction_5', emoji: '🔨', name: { ru: 'Аукционер', en: 'Auctioneer', es: 'Subastero' }, desc: { ru: 'Выиграть 5 аукционов', en: 'Win 5 auctions', es: 'Gana 5 subastas' }, points: 2, reward: { money: 60000 } },
+  { id: 'storage_use', emoji: '🏬', name: { ru: 'Хранитель', en: 'Keeper', es: 'Guardián' }, desc: { ru: 'Сдать товар на склад', en: 'Store an item', es: 'Guarda un artículo' }, points: 1, reward: { money: 5000 } },
+  { id: 'pallet_3', emoji: '🗃️', name: { ru: 'Оптовик-профи', en: 'Bulk buyer', es: 'Comprador mayorista' }, desc: { ru: 'Купить 3 палеты', en: 'Buy 3 pallets', es: 'Compra 3 palés' }, points: 2, reward: { money: 50000 } },
+  { id: 'defect_10', emoji: '🔍', name: { ru: 'Рентген', en: 'X-ray', es: 'Rayos X' }, desc: { ru: 'Найти 10 дефектов осмотром', en: 'Spot 10 defects', es: 'Detecta 10 defectos' }, points: 1, reward: { money: 15000 } },
+  { id: 'repair_10', emoji: '🛠️', name: { ru: 'Реставратор', en: 'Restorer', es: 'Restaurador' }, desc: { ru: 'Починить 10 товаров', en: 'Repair 10 items', es: 'Repara 10 artículos' }, points: 2, reward: { money: 45000 } },
+  { id: 'day_earn_100k', emoji: '💵', name: { ru: 'Дневной куш', en: 'Day jackpot', es: 'Premio del día' }, desc: { ru: 'Заработать 100 000 за день', en: 'Earn 100,000 in one day', es: 'Gana 100 000 en un día' }, points: 2, reward: { money: 50000 } },
+  { id: 'skill_3', emoji: '🎓', name: { ru: 'Специалист', en: 'Specialist', es: 'Especialista' }, desc: { ru: 'Любой навык до 3 уровня', en: 'Any skill to level 3', es: 'Cualquier habilidad a nivel 3' }, points: 1, reward: { money: 20000 } },
+  { id: 'streak_7', emoji: '🔥', name: { ru: 'Серия 7', en: 'Week streak', es: 'Racha de 7' }, desc: { ru: 'Заходить 7 дней подряд', en: 'Play 7 days in a row', es: 'Juega 7 días seguidos' }, points: 1, reward: { money: 25000 } },
+  { id: 'coll_20', emoji: '📔', name: { ru: 'Коллекционер', en: 'Collector', es: 'Coleccionista' }, desc: { ru: 'Собрать 20 разных товаров', en: 'Own 20 different items', es: 'Ten 20 artículos distintos' }, points: 2, reward: { money: 50000 } },
+  { id: 'coll_all', emoji: '🗃️', name: { ru: 'Полный каталог', en: 'Full catalog', es: 'Catálogo completo' }, desc: { ru: 'Собрать все товары в альбом', en: 'Collect every item in the album', es: 'Colecciona todos los artículos' }, points: 3, reward: { money: 200000 } }
 ];
 const BUSINESS_LEVELS = [
   { name: { ru: 'Ларёк', en: 'Stall', es: 'Puesto' }, emoji: '🥾', min: 0 },
@@ -1967,7 +2212,18 @@ const ACCENTS = {
   sunset:   { name: { ru: 'Закат', en: 'Sunset', es: 'Atardecer' },        primary: '#fb923c', strong: '#ea580c', soft: 'rgba(251,146,60,.15)' },
   crimson:  { name: { ru: 'Багрянец', en: 'Crimson', es: 'Carmesí' },      primary: '#fb7185', strong: '#e11d48', soft: 'rgba(251,113,133,.15)' },
   gold:     { name: { ru: 'Золото', en: 'Gold', es: 'Oro' },               primary: '#fbbf24', strong: '#d97706', soft: 'rgba(251,191,36,.15)' },
-  graphite: { name: { ru: 'Графит', en: 'Graphite', es: 'Grafito' },        primary: '#94a3b8', strong: '#64748b', soft: 'rgba(148,163,184,.15)' }
+  graphite: { name: { ru: 'Графит', en: 'Graphite', es: 'Grafito' },        primary: '#94a3b8', strong: '#64748b', soft: 'rgba(148,163,184,.15)' },
+  aqua:     { name: { ru: 'Аквамарин', en: 'Aqua', es: 'Aguamarina' },      primary: '#22d3ee', strong: '#0891b2', soft: 'rgba(34,211,238,.15)' },
+  mint:     { name: { ru: 'Мята', en: 'Mint', es: 'Menta' },                primary: '#2dd4bf', strong: '#0d9488', soft: 'rgba(45,212,191,.15)' },
+  indigo:   { name: { ru: 'Индиго', en: 'Indigo', es: 'Índigo' },           primary: '#818cf8', strong: '#6366f1', soft: 'rgba(129,140,248,.15)' },
+  fuchsia:  { name: { ru: 'Фуксия', en: 'Fuchsia', es: 'Fucsia' },          primary: '#e879f9', strong: '#c026d3', soft: 'rgba(232,121,249,.15)' },
+  lime:     { name: { ru: 'Лайм', en: 'Lime', es: 'Lima' },                 primary: '#a3e635', strong: '#65a30d', soft: 'rgba(163,230,53,.15)' },
+  rose:     { name: { ru: 'Роза', en: 'Rose', es: 'Rosa' },                 primary: '#fda4af', strong: '#e11d48', soft: 'rgba(253,164,175,.15)' },
+  sand:     { name: { ru: 'Песок', en: 'Sand', es: 'Arena' },               primary: '#d6b47a', strong: '#a16207', soft: 'rgba(214,180,122,.15)' },
+  coral:    { name: { ru: 'Коралл', en: 'Coral', es: 'Coral' },             primary: '#ff8a65', strong: '#f4511e', soft: 'rgba(255,138,101,.15)' },
+  sky:      { name: { ru: 'Небо', en: 'Sky', es: 'Cielo' },                 primary: '#7dd3fc', strong: '#0284c7', soft: 'rgba(125,211,252,.15)' },
+  lilac:    { name: { ru: 'Сирень', en: 'Lilac', es: 'Lila' },              primary: '#c4b5fd', strong: '#7c3aed', soft: 'rgba(196,181,253,.15)' },
+  sage:     { name: { ru: 'Шалфей', en: 'Sage', es: 'Salvia' },             primary: '#aecfa4', strong: '#5f8d4e', soft: 'rgba(174,207,164,.15)' }
 };
 const REP_TIERS = [
   { min: 0, name: { ru: 'Новичок', en: 'Newbie', es: 'Novato' }, emoji: '🐣', unlocks: [] },
@@ -2008,15 +2264,79 @@ const ACH_REWARDS = {
   big_deal: { money: 10000 }, no_defects_5: { money: 8000 }, first_order: { money: 5000 }, first_repair: { money: 5000 },
   perfect_repair: { money: 15000 }, million: { money: 100000 }, rep_max: { money: 50000 }, black_bought: { money: 5000 },
   pallet_first: { money: 15000 }, biz2: { money: 30000 }, biz4: { money: 200000 }, prestige1: { money: 250000 },
-  assistant: { money: 20000 }, goal_done: { money: 30000 }, story_done: { money: 25000 }, trends: { money: 15000 }
+  assistant: { money: 20000 }, goal_done: { money: 30000 }, story_done: { money: 25000 }, trends: { money: 15000 },
+  day_30: { money: 20000 }, day_100: { money: 60000 }, level_10: { money: 15000 }, level_20: { money: 50000 },
+  rich_100k: { money: 10000 }, deals_200: { money: 200000 }, clean_10: { money: 30000 }, big_deal_100k: { money: 100000 },
+  auction_win: { money: 20000 }, debt_free: { money: 10000 }, assistant_3: { money: 60000 }, transport_max: { money: 30000 },
+  max_inventory: { money: 25000 }, prestige_3: { money: 500000 }, quest_day: { money: 15000 }, story_lucky: { money: 12000 },
+  deals_25: { money: 12000 }, order_10: { money: 40000 }, auction_5: { money: 60000 }, storage_use: { money: 5000 },
+  pallet_3: { money: 50000 }, defect_10: { money: 15000 }, repair_10: { money: 45000 }, day_earn_100k: { money: 50000 },
+  skill_3: { money: 20000 }, streak_7: { money: 25000 },
+  coll_20: { money: 50000 }, coll_all: { money: 200000 }
 };
 
+const ACH_HINTS = {
+  first_sale: { ru: 'Продайте любой товар из инвентаря — через торг или мгновенно', en: 'Sell any inventory item — via bargaining or instantly', es: 'Vende cualquier artículo: negociando o al instante' },
+  ten_sales: { ru: 'Каждая продажа считается — даже мгновенная', en: 'Every sale counts — even instant ones', es: 'Cada venta cuenta, incluso instantánea' },
+  fifty_sales: { ru: '50 продаж любым способом: торг, заказы, помощник', en: '50 sales by any means: bargaining, orders, assistant', es: '50 ventas por cualquier vía: regateo, pedidos, asistente' },
+  hundred_sales: { ru: 'Стабильность важнее разовых кушов', en: 'Consistency beats one-off jackpots', es: 'La constancia vale más que un golpe de suerte' },
+  deals_200: { ru: '200 сделок за всё время игры', en: '200 deals over your whole career', es: '200 ventas en toda tu carrera' },
+  deals_25: { ru: '25 успешных сделок — торговый ритм', en: '25 successful deals — find your rhythm', es: '25 tratos exitosos: encuentra tu ritmo' },
+  big_deal: { ru: 'Продайте товар с прибылью 30 000 за одну сделку', en: 'Sell an item with 30,000 profit in one deal', es: 'Vende un artículo con 30 000 de ganancia' },
+  big_deal_100k: { ru: 'Прибыль 100 000 с одной сделки — охотьтесь на премиум-лоты ниже стоимости', en: '100,000 profit in one deal — hunt premium lots below value', es: '100 000 de ganancia: caza lotes premium por debajo de su valor' },
+  no_defects_5: { ru: '5 продаж без дефектов подряд — осматривайте товар перед покупкой', en: '5 defect-free sales in a row — inspect before buying', es: '5 ventas sin defectos seguidas: inspecciona antes de comprar' },
+  clean_10: { ru: '10 чистых продаж подряд — дефектный товар чините до продажи', en: '10 clean sales in a row — repair defective items before selling', es: '10 ventas limpias seguidas: repara lo defectuoso antes de vender' },
+  first_order: { ru: 'Возьмите заказ на вкладке «Заказы» и привезите нужный товар в срок', en: 'Take an order in the Orders tab and deliver the item in time', es: 'Toma un pedido en la pestaña Pedidos y entrégalo a tiempo' },
+  order_10: { ru: '10 выполненных заказов — клиенты любят надёжных', en: '10 completed orders — clients love reliability', es: '10 pedidos completados: los clientes aman la fiabilidad' },
+  first_repair: { ru: 'Почините товар с дефектом — сами в мини-игре или через мастера', en: 'Fix a defective item — via the minigame or a master', es: 'Arregla un artículo defectuoso: con el minijuego o un maestro' },
+  repair_10: { ru: '10 починок — дефектные после ремонта продаются дороже', en: '10 repairs — repaired items sell for more', es: '10 reparaciones: lo reparado se vende más caro' },
+  perfect_repair: { ru: 'В мини-игре ремонта попадите в идеальную зону 3 раза за одну починку', en: 'Hit the perfect zone 3 times in one repair minigame', es: 'Acierta la zona perfecta 3 veces en un minijuego' },
+  million: { ru: 'Накопите 1 000 000 на счету', en: 'Accumulate 1,000,000 in the bank', es: 'Acumula 1 000 000 en la cuenta' },
+  rep_max: { ru: 'Выполняйте заказы и продавайте честно — репутация вырастет до 100', en: 'Complete orders and sell honestly — reputation will hit 100', es: 'Cumple pedidos y vende honesto: la reputación llegará a 100' },
+  black_bought: { ru: 'При высокой репутации откроется чёрный рынок — купите там хоть раз', en: 'High reputation unlocks the black market — buy there once', es: 'Con alta reputación se abre el mercado negro: compra allí una vez' },
+  pallet_first: { ru: 'С газелью (транспорт 3) на вкладке «Бизнес» появятся палеты', en: 'With the truck (transport 3), pallets appear in the Business tab', es: 'Con la camioneta (transporte 3) aparecen palés en Negocio' },
+  pallet_3: { ru: 'Купите 3 палеты — опт всегда выгоднее', en: 'Buy 3 pallets — bulk is always cheaper', es: 'Compra 3 palés: comprar al por mayor sale mejor' },
+  biz2: { ru: 'Растите максимальный капитал — уровень бизнеса поднимется сам', en: 'Grow your peak capital — the business level rises on its own', es: 'Aumenta tu capital máximo: el nivel sube solo' },
+  biz4: { ru: 'Доведите дело до 2 000 000 — уровень «Империя»', en: 'Grow to 2,000,000 — the Empire level', es: 'Llega a 2 000 000: nivel Imperio' },
+  prestige1: { ru: 'С 5 000 000 на счету можно начать новую жизнь — обнуление ради множителя', en: 'With 5,000,000 you can start a new life — reset for a multiplier', es: 'Con 5 000 000 puedes reiniciar: pierdes todo pero ganas multiplicador' },
+  prestige_3: { ru: 'Престиж — это перерождение. Третий раз даёт эту награду', en: 'Prestige is rebirth. The third one grants this reward', es: 'El prestigio es un renacimiento. El tercero da este premio' },
+  assistant: { ru: 'На вкладке «Бизнес» наймите помощника — он будет продавать за вас', en: 'Hire an assistant in the Business tab — they sell for you', es: 'Contrata un asistente en Negocio: vende por ti' },
+  assistant_3: { ru: 'Прокачайте помощника до 3 уровня', en: 'Upgrade the assistant to level 3', es: 'Mejora al asistente al nivel 3' },
+  goal_done: { ru: 'Выполните цель сезона — крупная награда в конце', en: 'Complete a season goal — a big end-of-season reward', es: 'Cumple la meta de temporada: gran recompensa final' },
+  story_done: { ru: 'Участвуйте в сюжетных случаях — 5 раз', en: 'Take part in story events — 5 times', es: 'Participa en sucesos de historia: 5 veces' },
+  story_lucky: { ru: 'Повезёт в сюжетном случае с риском — тогда и получите', en: 'Get lucky in a risky story event and it is yours', es: 'Ten suerte en un suceso arriesgado y será tuyo' },
+  trends: { ru: 'Следите за ценами: тот же товар с изменением на 15%+ = тренд пойман', en: 'Watch prices: the same item moving 15%+ means a trend caught', es: 'Vigila los precios: el mismo artículo con cambio de 15%+ es una tendencia' },
+  day_30: { ru: 'Проведите 30 игровых дней — просто нажимайте «Новый день»', en: 'Play 30 in-game days — just tap New Day', es: 'Juega 30 días: solo pulsa Nuevo día' },
+  day_100: { ru: '100 игровых дней — проверка терпения', en: '100 in-game days — a test of patience', es: '100 días de juego: una prueba de paciencia' },
+  level_10: { ru: 'Набирайте XP сделками и заказами до 10 уровня', en: 'Earn XP from deals and orders up to level 10', es: 'Gana XP con ventas y pedidos hasta el nivel 10' },
+  level_20: { ru: '20 уровень — вершина прокачки', en: 'Level 20 — the top of progression', es: 'Nivel 20: la cima del progreso' },
+  rich_100k: { ru: 'Первые 100 000 на счету', en: 'Your first 100,000 in the bank', es: 'Tus primeros 100 000 en el banco' },
+  day_earn_100k: { ru: 'Заработайте 100 000 за один игровой день — флипы по-крупному', en: 'Earn 100,000 in a single in-game day — flip big', es: 'Gana 100 000 en un solo día: flips grandes' },
+  auction_win: { ru: 'Каждую неделю на рынке аукцион — перебейте ботов и заберите лот', en: 'An auction appears weekly — outbid the bots and take the lot', es: 'Cada semana hay subasta: supera a los bots y llévate el lote' },
+  auction_5: { ru: 'Выиграйте 5 аукционов — чувствуйте потолок ботов и не ставьте лишнего', en: 'Win 5 auctions — read the bot caps and never overbid', es: 'Gana 5 subastas: calcula el techo de los bots y no pujes de más' },
+  debt_free: { ru: 'Возьмите кредит и полностью его погасите', en: 'Take a loan and repay it in full', es: 'Toma un préstamo y págalo por completo' },
+  transport_max: { ru: 'Купите газель на вкладке «Бизнес» — откроет далёкие поставки', en: 'Buy the truck in the Business tab — unlocks far deliveries', es: 'Compra la camioneta en Negocio: abre entregas lejanas' },
+  max_inventory: { ru: 'Прокачайте инвентарь до последнего уровня', en: 'Max out the inventory upgrade', es: 'Mejora el inventario al máximo nivel' },
+  skill_3: { ru: 'Вложите очки навыков — прокачайте любой навык до 3 уровня', en: 'Spend skill points — raise any skill to level 3', es: 'Gasta puntos: sube cualquier habilidad al nivel 3' },
+  streak_7: { ru: 'Заходите в игру 7 дней подряд — серия ежедневных бонусов', en: 'Play 7 days in a row — the daily bonus streak', es: 'Entra 7 días seguidos: racha de bonus diarios' },
+  quest_day: { ru: 'Закройте все ежедневные квесты за один день', en: 'Complete all daily quests within one day', es: 'Completa todas las misiones diarias en un día' },
+  storage_use: { ru: 'Сдайте товар на склад — он приносит 2% стоимости в день', en: 'Store an item — it earns 2% of value per day', es: 'Guarda un artículo: da el 2% de su valor al día' },
+  defect_10: { ru: 'Найдите 10 дефектов осмотром — скупой платит дважды', en: 'Spot 10 defects via inspection — penny wise pays twice', es: 'Detecta 10 defectos inspeccionando: el tacaño paga doble' },
+  coll_20: { ru: 'Покупайте разные товары — 20 уникальных видов попадут в альбом', en: 'Buy different items — 20 unique kinds fill the album', es: 'Compra artículos distintos: 20 tipos únicos llenan el álbum' },
+  coll_all: { ru: 'Соберите весь каталог: все виды товаров, включая кейсы и палеты', en: 'Collect the whole catalog: every item kind, including cases and pallets', es: 'Completa el catálogo: todos los tipos de artículos, incluidos cajas y palés' }
+};
 const INV_SIZES = [3, 5, 8, 15];
 const MARKET_SIZES = [6, 8, 10];
 const TARGET_MONEY = 100000;
-const SAVE_KEY = 'reseller_sim_v17';
-const SAVE_RAW_KEY = 'reseller_sim_v17_raw';
-const SAVE_VERSION = 17;
+/* ключи НЕ зависят от версии: обновления игры больше не теряют прогресс.
+   Старые ключи (v13-v17) подхватываются при первом запуске и мигрируют. */
+const SAVE_KEY = 'reseller_sim_save';
+
+const SAVE_RAW_KEY = 'reseller_sim_save_raw';
+
+const SAVE_BACKUP_KEY = 'reseller_sim_save_backup';
+const SAVE_LEGACY_KEYS = ['reseller_sim_v17', 'reseller_sim_v16', 'reseller_sim_v15', 'reseller_sim_v14', 'reseller_sim_v13'];
+const SAVE_VERSION = 18;
 const INSPECT_PCT = 0.06;
 const INSPECT_MIN = 300;
 const QUICK_STEPS = [500, 1000, 2000];
@@ -2033,11 +2353,13 @@ const defaultState = () => ({
   soundOn: true, musicOn: false, hapticOn: true, showTutorial: true,
   wasRich: false, lastBizLevel: 0, onboardingStep: 0, firstPlayed: false,
   filter: 'all', sortBy: 'default', prestige: 0, auction: null, search: '',
-  priceHistory: {}, blackMarket: [], assistant: 0, goal: null, storyQuest: null, storyDone: false,
-  device: 'phone', goalsDone: [], dayEarned: 0, motion: true, accent: 'violet', log: [],
+  priceHistory: {}, itemTrend: {}, blackMarket: [], assistant: 0, goal: null, storyQuest: null, storyDone: false,
+  device: 'phone', goalsDone: [], dayEarned: 0, motion: true, accent: 'violet', log: [], logOpen: true,
+  lastSeen: 0, earnHistory: [], combo: 0, comboDay: 0,
   up: { inventory: 0, market: 0, analytics: false, vip: false, negotiation: false, accountant: false },
-  stats: { totalEarned: 0, totalSpent: 0, deals: 0, bestDeal: 0, itemsBought: 0, defectsFound: 0, ordersDone: 0, cleanStreak: 0, repairsDone: 0, storyDeals: 0, bestDayEarnings: 0, bestStreak: 0 },
-  achievements: {}
+  stats: { totalEarned: 0, totalSpent: 0, deals: 0, bestDeal: 0, itemsBought: 0, defectsFound: 0, ordersDone: 0, cleanStreak: 0, repairsDone: 0, storyDeals: 0, bestDayEarnings: 0, bestStreak: 0, auctionsWon: 0, storedCount: 0, palletsBought: 0 },
+  achievements: {},
+  collection: {}
 });
 
 let S = defaultState();
@@ -2055,8 +2377,8 @@ const _nf = {};
 function fmt(n) {
   const loc = S.lang === 'ru' ? 'ru-RU' : (S.lang === 'es' ? 'es-ES' : 'en-US');
   let f = _nf[loc];
-  if (!f) f = _nf[loc] = new Intl.NumberFormat(loc);
-  return f.format(Math.round(n)) + ' ' + (CURRENCY[S.lang] || '₽');
+  if (!f) f = _nf[loc] = { nf: new Intl.NumberFormat(loc), suf: ' ' + (CURRENCY[S.lang] || '₽') };
+  return f.nf.format(Math.round(n)) + f.suf;
 }
 const round100 = n => Math.max(100, Math.round(n / 100) * 100);
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2089,7 +2411,7 @@ const marketSize = () => MARKET_SIZES[S.up.market];
 const currentSeason = () => SEASONS[Math.floor(((S.day - 1) % 28) / 7)];
 const seasonMultFor = item => (currentSeason().mods[item.cat]) || 1;
 const inspectCost = (askPrice) => { if (S.event && S.event.effect === 'freeInspect') return 0; let cost = Math.max(INSPECT_MIN, round100(askPrice * INSPECT_PCT)); if (S.skills.inspect >= 1) cost = round100(cost * 0.75); return cost; };
-const rentCost = () => { let base = 400 + S.day * 150; base = Math.round(base * (1 + bizLevel() * 0.6)); if (S.up.accountant) base = Math.round(base * 0.7); if (S.event && S.event.effect === 'taxRaise') base += S.event.amount; return base; };
+const rentCost = () => { let base = 550 + S.day * 190; base = Math.round(base * (1 + bizLevel() * 0.7)); if (S.up.accountant) base = Math.round(base * 0.75); if (S.event && S.event.effect === 'taxRaise') base += S.event.amount; return base; };
 const creditInterest = () => { let b = Math.round(S.credit * 0.03); if (S.up.accountant) b = Math.round(b * 0.7); return Math.min(b, 1000); };
 const creditLimit = () => Math.round(S.rep * 500 + bizLevel() * 5000);
 const prestigeMult = () => Math.pow(1.2, S.prestige);
@@ -2112,7 +2434,8 @@ const SafeStorage = {
 };
 SafeStorage.test();
 
-let saveTimer = null, lastSaveTime = 0, saveFailed = false;
+let saveTimer = null, lastSaveTime = 0, saveFailed = false, lastBackupTime = 0;
+let pendingWelcome = null;
 
 function sanitizeState(s) {
   return {
@@ -2129,21 +2452,26 @@ function sanitizeState(s) {
     wasRich: s.wasRich, lastBizLevel: s.lastBizLevel,
     onboardingStep: s.onboardingStep, firstPlayed: s.firstPlayed,
     filter: s.filter, sortBy: s.sortBy, prestige: s.prestige, auction: s.auction, search: typeof s.search === 'string' ? s.search : '',
-    priceHistory: s.priceHistory || {}, blackMarket: s.blackMarket || [], assistant: s.assistant || 0,
+    priceHistory: s.priceHistory || {}, itemTrend: (s.itemTrend && typeof s.itemTrend === 'object') ? s.itemTrend : {}, blackMarket: s.blackMarket || [], assistant: s.assistant || 0,
     goal: s.goal || null, storyQuest: s.storyQuest || null, storyDone: !!s.storyDone,
-    device: s.device === 'desktop' ? 'desktop' : 'phone', goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [], dayEarned: s.dayEarned || 0,
+    device: s.device === 'desktop' ? 'desktop' : 'phone', goalsDone: Array.isArray(s.goalsDone) ? s.goalsDone : [], dayEarned: s.dayEarned || 0, logOpen: s.logOpen !== false,
+    lastSeen: s.lastSeen || 0, earnHistory: Array.isArray(s.earnHistory) ? s.earnHistory.slice(-30) : [], combo: s.combo || 0, comboDay: s.comboDay || 0,
     motion: s.motion !== false, accent: ACCENTS[s.accent] ? s.accent : 'violet', log: Array.isArray(s.log) ? s.log.slice(-14) : [],
-    up: s.up, stats: s.stats, achievements: s.achievements
+    up: s.up, stats: s.stats, achievements: s.achievements,
+    collection: (s.collection && typeof s.collection === 'object' && !Array.isArray(s.collection)) ? s.collection : {}
   };
 }
 
 function save(force) {
   if (!SafeStorage.available) return;
   try {
+    S.lastSeen = Date.now();
     const json = JSON.stringify(sanitizeState(S));
     const obf = obfuscate(json);
     if (obf && SafeStorage.set(SAVE_KEY, obf)) {
       SafeStorage.remove(SAVE_RAW_KEY);
+      /* страховочный бэкап: при принудительном сохранении и не чаще раза в 2 минуты */
+      if (force || Date.now() - lastBackupTime > 120000) { SafeStorage.set(SAVE_BACKUP_KEY, obf); lastBackupTime = Date.now(); }
       lastSaveTime = Date.now();
       saveFailed = false;
       return;
@@ -2168,14 +2496,24 @@ function saveDebounced() {
 
 function load() {
   let data = null;
-  const raw = SafeStorage.get(SAVE_KEY);
-  if (raw) {
-    const dec = deobfuscate(raw);
-    if (dec) { try { data = JSON.parse(dec); } catch(e) { console.warn('Corrupted primary save'); } }
-  }
+  const tryParse = (str, obf) => {
+    if (!str) return null;
+    try {
+      const dec = obf ? deobfuscate(str) : str;
+      if (!dec) return null;
+      const d = JSON.parse(dec);
+      return (d && typeof d === 'object') ? d : null;
+    } catch(e) { return null; }
+  };
+  /* порядок: основной ключ, сырой фолбэк, страховочный бэкап, старые версии игры */
+  data = tryParse(SafeStorage.get(SAVE_KEY), true)
+      || tryParse(SafeStorage.get(SAVE_RAW_KEY), false)
+      || tryParse(SafeStorage.get(SAVE_BACKUP_KEY), true);
   if (!data) {
-    const rawFb = SafeStorage.get(SAVE_RAW_KEY);
-    if (rawFb) { try { data = JSON.parse(rawFb); } catch(e) {} }
+    for (const lk of SAVE_LEGACY_KEYS) {
+      data = tryParse(SafeStorage.get(lk), true) || tryParse(SafeStorage.get(lk + '_raw'), false);
+      if (data) break;
+    }
   }
   if (!data) return false;
   const version = data._v || 0;
@@ -2189,6 +2527,8 @@ function load() {
     S.search = typeof data.search === 'string' ? data.search : '';
     if (S.dailyDemand && S.dailyDemand.id) { const it = ITEMS_BY_ID.get(S.dailyDemand.id); S.dailyDemand = { cat: (it && it.cat) || 'tech', mult: 1.3 }; }
     if (!S.priceHistory || typeof S.priceHistory !== 'object') S.priceHistory = {};
+    if (!S.itemTrend || typeof S.itemTrend !== 'object') S.itemTrend = {};
+    ensureItemTrends();
     if (!Array.isArray(S.blackMarket)) S.blackMarket = [];
     if (!Array.isArray(S.goalsDone)) S.goalsDone = [];
     if (!Array.isArray(S.log)) S.log = [];
@@ -2202,12 +2542,30 @@ function load() {
     if (!Array.isArray(S.storage)) S.storage = [];
     if (!Array.isArray(S.orders)) S.orders = [];
     if (!Array.isArray(S.quests)) S.quests = [];
+    if (!S.stats || typeof S.stats !== 'object') S.stats = {};
+    ['auctionsWon', 'storedCount', 'palletsBought', 'defectsFound', 'repairsDone'].forEach(k => { if (typeof S.stats[k] !== 'number') S.stats[k] = 0; });
+    if (!Array.isArray(S.earnHistory)) S.earnHistory = [];
+    if (!S.collection || typeof S.collection !== 'object' || Array.isArray(S.collection)) S.collection = {};
     const ids = [...S.market, ...S.inv, ...S.storage].map(x => x && x.id ? x.id : 0);
     idc = ids.length ? Math.max(...ids) : 0;
     displayMoney = S.money;
+    if (auction) { cleanupAuctionTimers(); auction = null; }
     chat = null; repairGame = null; auctionActive = false;
     _cache.bizLevelKey = -1;
     _cache.invLimitKey = '';
+    /* склад продолжает работать, пока игрока нет: «с возвращением» */
+    pendingWelcome = null;
+    const awayMs = S.lastSeen ? Date.now() - S.lastSeen : 0;
+    if (awayMs > 1800000 && Array.isArray(S.storage) && S.storage.length) {
+      const dayInc = storageIncome();
+      if (dayInc > 0) {
+        const earned = round100(Math.min(awayMs, 8 * 3600000) / 86400000 * dayInc * 0.6);
+        if (earned >= 100) { S.money += earned; S.stats.totalEarned += earned; pendingWelcome = earned; }
+      }
+    }
+    S.lastSeen = Date.now();
+    /* прогресс пережил обновление: сразу перезаписываем в актуальные ключи */
+    save(true);
     return true;
   } catch(e) { console.error('Load failed:', e); return false; }
 }
@@ -2239,7 +2597,7 @@ const STAGGER_SEL = '#marketResults .card, #invResults .card, #orderResults .car
 /* обновляет «вечные» списки карточек под текущую вкладку */
 function syncLists() {
   if (activeTab === 'market') {
-    syncList('hostMarket', 'marketResults', getFilteredMarket(), renderMarketCard, `<div class="empty">${t('market_none')}</div>`);
+    syncList('hostMarket', 'marketResults', getFilteredMarket(), renderMarketCard, emptyState('search', t('market_none'), t('market_none_hint'), (S.search || S.filter !== 'all') ? `<button class="btn-ghost btn-sm" style="margin-top:12px" onclick="resetFilters()">${ico('undo')}${t('empty_reset')}</button>` : ''));
   } else if (activeTab === 'inv') {
     syncList('hostInv', 'invResults', S.inv, renderInvCard);
     if (storageLimit() > 0) syncList('hostStorage', 'storageResults', S.storage, renderStorageCard);
@@ -2256,7 +2614,7 @@ function panelHeader(icon, title, sub, right) {
 }
 function safePanel(name) {
   try { return PANELS[name](); }
-  catch (e) { console.error('Panel "' + name + '" failed:', e); return `<div class="empty">${t('panel_error')}</div>`; }
+  catch (e) { console.error('Panel "' + name + '" failed:', e); return emptyState('alert', t('panel_error'), ''); }
 }
 window.addEventListener('error', e => {
   console.error('Runtime error:', e.error || e.message);
@@ -2305,11 +2663,25 @@ function syncList(hostId, listId, items, renderItem, emptyHTML) {
   const order = [];
   for (const it of items) {
     const key = String(it.id);
-    const html = renderItem(it);
+    let html;
+    try { html = renderItem(it); } catch (e) { console.error('card render failed:', key, e); const prev = old.get(key); if (prev) { old.delete(key); order.push(prev); } continue; }
     let node = old.get(key);
     if (node) {
       old.delete(key);
-      if (node._html !== html) { node.innerHTML = html; node._html = html; }
+      if (node._html !== html) {
+        /* при обновлении разметки переносим классы появления и --i:
+           свежая карточка заново проигрывает анимацию и «мигает» при прокрутке */
+        const oc = node.firstElementChild;
+        const ocCls = oc ? (oc.getAttribute('class') || '') : '';
+        const ocI = oc ? oc.style.getPropertyValue('--i') : '';
+        node.innerHTML = html; node._html = html;
+        const nc = node.firstElementChild;
+        if (nc && oc && /\breveal/.test(ocCls)) {
+          nc.classList.add('reveal');
+          if (/\brevealed\b/.test(ocCls)) nc.classList.add('revealed');
+          if (ocI) nc.style.setProperty('--i', ocI);
+        }
+      }
     } else {
       node = document.createElement('div');
       node.dataset.key = key;
@@ -2319,12 +2691,20 @@ function syncList(hostId, listId, items, renderItem, emptyHTML) {
     order.push(node);
   }
   old.forEach(n => n.remove());
-  let reorder = el.children.length !== order.length;
-  if (!reorder) for (let i = 0; i < order.length; i++) if (el.children[i] !== order[i]) { reorder = true; break; }
-  if (reorder) {
-    const frag = document.createDocumentFragment();
-    for (const n of order) frag.appendChild(n);
-    el.appendChild(frag);
+  /* быстрый путь «список только дополнился»: старые узлы не трогаем.
+     Переустановка узла в DOM перезапускает CSS-анимации — карточки
+     мигают и «пропадают» при листании */
+  const cur = Array.prototype.slice.call(el.children);
+  let prefix = 0;
+  while (prefix < cur.length && prefix < order.length && cur[prefix] === order[prefix]) prefix++;
+  if (prefix !== cur.length || prefix !== order.length) {
+    if (prefix === cur.length) {
+      for (let i = prefix; i < order.length; i++) el.appendChild(order[i]);
+    } else {
+      const frag = document.createDocumentFragment();
+      for (const n of order) frag.appendChild(n);
+      el.appendChild(frag);
+    }
   }
   if (el.parentElement !== host) host.appendChild(el);
 }
@@ -2334,7 +2714,7 @@ function revealVisibleCards() {
   const main = $('appMain');
   if (!main) return;
   const view = main.getBoundingClientRect();
-  const pending = document.querySelectorAll('#marketResults .card.reveal:not(.revealed), #invResults .card.reveal:not(.revealed), #orderResults .card.reveal:not(.revealed)');
+  const pending = document.querySelectorAll('#marketResults .card.reveal:not(.revealed), #invResults .card.reveal:not(.revealed), #orderResults .card.reveal:not(.revealed), #storageResults .card.reveal:not(.revealed)');
   pending.forEach(c => {
     const r = c.getBoundingClientRect();
     if (r.top < view.bottom + 80 && r.bottom > view.top - 80) c.classList.add('revealed');
@@ -2342,10 +2722,10 @@ function revealVisibleCards() {
 }
 function setupReveal() {
   /* наблюдаем только новые карточки — старые уже «проявились» */
-  const cards = document.querySelectorAll('#marketResults .card:not(.reveal), #invResults .card:not(.reveal), #orderResults .card:not(.reveal)');
+  const cards = document.querySelectorAll('#marketResults .card:not(.reveal), #marketResults .reveal:not(.revealed), #invResults .card:not(.reveal), #invResults .reveal:not(.revealed), #orderResults .card:not(.reveal), #orderResults .reveal:not(.revealed), #storageResults .card:not(.reveal), #storageResults .reveal:not(.revealed)');
   if (!cards.length) return;
   if (S.motion === false) { cards.forEach(c => { c.classList.add('revealed'); c.classList.remove('reveal'); }); return; }
-  cards.forEach((c, i) => { c.classList.add('reveal'); c.style.setProperty('--i', Math.min(i, 8)); });
+  cards.forEach((c, i) => { c.classList.add('reveal'); if (!c.style.getPropertyValue('--i')) c.style.setProperty('--i', Math.min(i, 8)); });
   /* IntersectionObserver считает видимость сама и не заставляет браузер
      пересчитывать раскладку — поэтому в рендере нет принудительного reflow */
   if ('IntersectionObserver' in window) {
@@ -2398,6 +2778,7 @@ function maybeLoadMore() {
   _fmCache = { key: '', items: [] };
   /* список обновляем точечно — карточки не пересоздаются и не мигают */
   syncLists();
+  setupReveal();
   setupPulse();
   updateResultCount();
   const lotEl = $('marketLots');
@@ -2411,18 +2792,21 @@ function doRender() {
   renderBanners();
   const html = `<section class="panel">${safePanel(activeTab)}</section>`;
   const shellChanged = !(_panelCache.tab === activeTab && _panelCache.html === html);
+  let keepScroll = 0;
   if (shellChanged) {
     /* перерисовка innerHTML сбрасывает скролл — возвращаем его на место,
-       иначе после продажи/покупки список "прыгает" и товары кажутся пропавшими */
+       иначе после продажи/покупки список "прыгает" и товары кажутся пропавшими.
+       ВАЖНО: сам возврат скролла делаем в конце doRender, после syncLists:
+       сразу после innerHTML списки ещё не в DOM, высота маленькая,
+       и scrollTo зажимается — пользователя выбрасывает к началу списка */
     const main = $('appMain');
-    const keepScroll = main ? main.scrollTop : 0;
+    keepScroll = main ? main.scrollTop : 0;
     /* запоминаем фокус в поиске, чтобы перерисовка его не теряла */
     const siOld = $('searchInput');
     const hadFocus = !!(siOld && document.activeElement === siOld);
     const selStart = hadFocus ? siOld.selectionStart : null;
     const selEnd = hadFocus ? siOld.selectionEnd : null;
     $('appMain').innerHTML = html;
-    if (main && keepScroll > 0) { try { main.scrollTo({ top: keepScroll, behavior: 'instant' }); } catch (e) { main.scrollTop = keepScroll; } }
     _panelCache = { tab: activeTab, html };
     /* positionSegs читает размеры — вызываем только когда панель перерисована */
     positionSegs();
@@ -2441,6 +2825,13 @@ function doRender() {
   setupReveal();
   setupPulse();
   paintStaticIcons();
+  /* скролл возвращаем только теперь — списки снова в DOM, высота настоящая.
+     Раньше возврат шёл сразу после innerHTML и зажимался короткой высотой:
+     при листании пользователя выбрасывало к началу, товары «пропадали» */
+  if (shellChanged && keepScroll > 0) {
+    const m2 = $('appMain');
+    if (m2 && Math.abs(m2.scrollTop - keepScroll) > 1) { try { m2.scrollTo({ top: keepScroll, behavior: 'instant' }); } catch (e) { m2.scrollTop = keepScroll; } }
+  }
   saveDebounced();
 }
 
@@ -2448,10 +2839,30 @@ function doRender() {
    АУДИО
    ═══════════════════════════════════════════════════════ */
 let audioCtx = null, musicInterval = null, musicGain = null;
+/* пауза аудио в фоне: экономия батареи на мобильных */
+document.addEventListener('visibilitychange', () => {
+  if (!audioCtx) return;
+  if (document.hidden) { try { audioCtx.suspend(); } catch (e) {} }
+  else if (S.soundOn || S.musicOn) { try { audioCtx.resume(); } catch (e) {} }
+});
 function initAudio() { if (audioCtx) return; try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); musicGain = audioCtx.createGain(); musicGain.gain.value = 0.05; musicGain.connect(audioCtx.destination); } catch(e) {} }
 function playSound(type) {
   if (!S.soundOn) return; initAudio(); if (!audioCtx) return;
   try {
+    if (type === 'jackpot') {
+      /* фанфары: восходящее трезвучие */
+      [[660, 0, .14], [880, .1, .14], [1320, .2, .32]].forEach(x => {
+        const oo = audioCtx.createOscillator(), gg = audioCtx.createGain();
+        oo.connect(gg); gg.connect(audioCtx.destination);
+        oo.frequency.value = x[0]; oo.type = 'triangle';
+        const t0 = audioCtx.currentTime + x[1];
+        gg.gain.setValueAtTime(0.0001, t0);
+        gg.gain.exponentialRampToValueAtTime(0.09, t0 + 0.02);
+        gg.gain.exponentialRampToValueAtTime(0.001, t0 + x[2]);
+        oo.start(t0); oo.stop(t0 + x[2] + 0.02);
+      });
+      return;
+    }
     const o = audioCtx.createOscillator(), g = audioCtx.createGain();
     o.connect(g); g.connect(audioCtx.destination);
     let freq = 440, dur = 0.08;
@@ -2459,7 +2870,7 @@ function playSound(type) {
     else if (type === 'buy') { freq = 520; dur = 0.1; } else if (type === 'sell') { freq = 1200; dur = 0.15; o.type = 'triangle'; }
     else if (type === 'error') { freq = 220; dur = 0.15; } else if (type === 'ach') { freq = 1320; dur = 0.2; }
     else if (type === 'perfect') { freq = 1760; dur = 0.15; } else if (type === 'message') { freq = 480; dur = 0.06; }
-    o.frequency.value = freq; o.type = o.type || 'sine';
+    o.frequency.value = type === 'sell' ? freq * (0.96 + Math.random() * 0.08) : freq; o.type = o.type || 'sine';
     g.gain.setValueAtTime(0.08, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
     o.start(); o.stop(audioCtx.currentTime + dur);
   } catch(e) {}
@@ -2492,8 +2903,39 @@ function startMusic() {
   };
   playChord(); musicInterval = setInterval(playChord, 3000);
 }
+/* ═══ ВСТРЯСКА И ВСПЫШКА ЭКРАНА: драматичные моменты ═══ */
+function screenShake() {
+  const m = $('appMain');
+  if (!m || S.motion === false) return;
+  m.classList.remove('shake');
+  void m.offsetWidth; /* перезапуск анимации — редкий намеренный reflow */
+  m.classList.add('shake');
+  setTimeout(() => m.classList.remove('shake'), 520);
+}
+function screenFlash() {
+  if (S.motion === false) return;
+  const f = document.createElement('div');
+  f.className = 'screen-flash';
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 700);
+}
 function haptic(ms) { if (!S.hapticOn) return; try { if (navigator.vibrate) navigator.vibrate(ms || 15); } catch(e) {} }
+/* ═══ ОДНА ПЛАШКА УВЕДОМЛЕНИЯ: новое сменяет предыдущее, а не наслаивается ═══ */
+let _toastEl = null, _toastTimer = null, _toastKey = '';
+function hideToast() {
+  if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+  if (_toastEl) { _toastEl.remove(); _toastEl = null; _toastKey = ''; }
+}
 function toast(msg, type, action) {
+  const life = action ? 6000 : (type === 'ach' ? 3400 : 2200);
+  const key = (type || '') + '|' + msg;
+  if (_toastTimer) clearTimeout(_toastTimer);
+  if (_toastEl && !action && _toastKey === key) {
+    /* тот же текст — дубли не плодим, просто продлеваем показ */
+    _toastTimer = setTimeout(hideToast, life);
+    return;
+  }
+  hideToast();
   const t = document.createElement('div');
   t.className = 'toast' + (type ? ' ' + type : '');
   const span = document.createElement('span');
@@ -2503,12 +2945,12 @@ function toast(msg, type, action) {
     const b = document.createElement('button');
     b.className = 'toast-btn';
     b.textContent = action.label;
-    b.addEventListener('click', () => { try { action.fn(); } catch (e) { console.error(e); } t.remove(); });
+    b.addEventListener('click', () => { try { action.fn(); } catch (e) { console.error(e); } hideToast(); });
     t.appendChild(b);
   }
+  _toastEl = t; _toastKey = key;
   document.body.appendChild(t);
-  const life = action ? 6000 : 2200;
-  setTimeout(() => t.remove(), life);
+  _toastTimer = setTimeout(hideToast, life);
 }
 function showConfetti(count) {
   const emojis = ['🎉', '💰', '⭐', '💎', '✨', '🎊'];
@@ -2590,7 +3032,7 @@ function addXp(amount) {
     leveled = true;
   }
   if (leveled) {
-    playSound('ach'); haptic(50); showConfetti(30);
+    playSound('jackpot'); haptic(50); showConfetti(30); screenShake(); screenFlash(); flyCoins(12);
     setTimeout(() => showAlert(t('msg_level_up'), t('msg_level_text', { n: S.level, m: fmt(S.level * 1000) }), '🏆'), 100);
   }
   renderStats();
@@ -2617,6 +3059,7 @@ function checkQuests(type, amount) {
       if (q.current >= q.target) {
         q.current = q.target; q.claimed = true; S.money += q.reward; S.stats.totalEarned += q.reward;
         toast(`✅ ${t('quests_title')}! +${fmt(q.reward)}`, 'success');
+        if (S.quests.every(q => q.claimed)) unlockAch('quest_day');
         updated = true;
       }
     }
@@ -2657,6 +3100,7 @@ function applyMotion() {
 function applyLang() {
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.getAttribute('data-i18n'));
   const st = $('splashTagline'); if (st) st.textContent = t('splash_tagline');
+  document.querySelectorAll('#splashLang .lang-btn').forEach(b => b.classList.toggle('active', b.dataset.id === S.lang));
   const bs = $('btnStartTxt'); if (bs) bs.textContent = t('btn_start');
   const bp = $('btnPrivacyTxt'); if (bp) bp.textContent = t('btn_privacy');
   const pt = $('progText'); if (pt) pt.textContent = t('prog_text');
@@ -2684,6 +3128,8 @@ function showSheet(html) { $('sheet').innerHTML = html; $('modal').classList.rem
 function closeSheet(silent) {
   if (repairGame) { cancelAnimationFrame(repairGame.rafId); repairGame = null; }
   chat = null;
+  /* аукцион продолжает жить без листа — вернуться можно с карточки на рынке */
+  if (auction) auction.open = false;
   confirmCallback = null;
   $('modal').classList.add('hidden');
   if (!silent) render();
@@ -2766,6 +3212,7 @@ function pickStory(id, choiceIdx) {
   const lucky = Math.random() < c.chance;
   if (lucky && c.reward) {
     S.money += c.reward; S.stats.totalEarned += c.reward;
+    unlockAch('story_lucky');
     toast('🎲 ' + t('story_win') + ' +' + fmt(c.reward), 'success');
   } else if (c.cost) {
     toast('🎲 ' + t('story_fail'), 'error');
@@ -2807,7 +3254,7 @@ function blackBuy(id) {
     playSound('error'); haptic(50); render(); return;
   }
   const copy = Object.assign({}, it, { id: ++idc, stock: 1, askPrice: it.askPrice });
-  S.inv.push(copy);
+  S.inv.push(copy); markCollected(copy);
   unlockAch('black_bought'); addXp(12); checkQuests('buy', 1);
   toast('🌒 ' + t('msg_bought', { n: fmt(it.askPrice) }), 'success');
   playSound('buy'); haptic(20); render();
@@ -2854,7 +3301,7 @@ function quickBuy(id) {
   S.money -= it.askPrice; S.stats.totalSpent += it.askPrice; S.stats.itemsBought++;
   const copy = Object.assign({}, it, { id: ++idc, stock: 1 });
   S.market = S.market.filter(x => x.id !== it.id);
-  S.inv.push(copy);
+  S.inv.push(copy); markCollected(copy);
   logAction('bag', t('log_bought', { n: itemName(it), m: fmt(it.askPrice) }));
   flyCardToInventory(it.id);
   if (copy.defect) { copy.inspected = true; S.stats.defectsFound++; S.stats.cleanStreak = 0; toast(t('msg_inspect_defect'), 'error'); }
@@ -2875,7 +3322,7 @@ function sellBase(it) {
 function quickSell(id) {
   const it = S.inv.find(x => x.id === id);
   if (!it) return;
-  const price = round100(Math.max(100, sellBase(it) * 0.92));
+  const price = round100(Math.max(100, sellBase(it) * 0.86));
   /* первое касание только "взводит" кнопку — продажа происходит по второму */
   if (_armed.sell !== id || Date.now() > _armed.until) {
     _armed.sell = id; _armed.until = Date.now() + 2600;
@@ -2909,10 +3356,10 @@ function doQuickSell(it, price) {
   S.inv = S.inv.filter(x => x.id !== it.id);
   logAction('coin', t('log_sold', { n: itemName(it), m: fmt(price) }));
   S.rep = Math.min(100, S.rep + 2); refreshUnlocks();
-  addXp(18); checkQuests('sell', 1); if (profit > 0) checkQuests('earn', profit);
+  registerSale(profit); addXp(18); checkQuests('sell', 1); if (profit > 0) checkQuests('earn', profit);
   goalProgress('sell', 1);
   playSound('sell'); haptic(20);
-  toast(profit >= 0 ? t('msg_profit_up', { n: fmt(profit) }) : t('msg_profit_down', { n: fmt(profit) }), profit >= 0 ? 'success' : 'error');
+  toast((profit >= 0 ? t('msg_profit_up', { n: fmt(profit) }) : t('msg_profit_down', { n: fmt(profit) })) + comboLabel(), profit >= 0 ? 'success' : 'error');
   checkAch(); checkRich();
   render();
 }
@@ -2924,7 +3371,16 @@ function repairZones(item) {
 }
 function makeLot(forceTier, black) {
   const pool = ITEMS.filter(repAllowsItem);
-  const t = pick(pool.length ? pool : ITEMS);
+  /* взвешенный выбор: при высокой репутации чаще попадаются дорогие товары,
+     при низкой — дешёвые (дорогие.base >= 60000, дешёвые.base <= 8000) */
+  let t;
+  if (pool.length) {
+    const r = (S.rep || 0) / 100;
+    const weights = pool.map(x => x.base >= 60000 ? 0.25 + r : (x.base <= 8000 ? Math.max(0.15, 1.25 - r * 1.1) : 1));
+    let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
+    t = pool[pool.length - 1];
+    for (let i = 0; i < pool.length; i++) { roll -= weights[i]; if (roll <= 0) { t = pool[i]; break; } }
+  } else t = pick(ITEMS);
   const condition = rnd(0.55, 1.0);
   const seasonMult = currentSeason().mods[t.cat] || 1;
   let tier = forceTier || 'common';
@@ -2934,27 +3390,30 @@ function makeLot(forceTier, black) {
   }
   const tierMult = tier === 'premium' ? 2.5 : tier === 'rare' ? 1.5 : 1;
   const marketValue = round100(t.base * condition * seasonMult * tierMult);
-  const defect = Math.random() < 0.18;
+  const defect = Math.random() < 0.20;
   let trueValue = defect ? round100(marketValue * 0.55) : marketValue;
-  let askPrice = round100(marketValue * rnd(0.58, 0.9));
+  let askPrice = round100(marketValue * rnd(0.64, 0.94));
   if (!black) askPrice = round100(askPrice * (1 - supplierDiscount()));
   if (S.event && S.event.effect === 'cheapMarket') askPrice = round100(askPrice * S.event.mult);
   let story = null;
   if (tier === 'common' && Math.random() < 0.25) { story = pick(STORIES); askPrice = round100(askPrice * story.priceMult); trueValue = round100(trueValue * story.trueMult); }
+  /* золотой лот: редкая находка — ценность +25%, свечение карточки */
+  let golden = false;
+  if (!black && !forceTier && Math.random() < 0.035) { golden = true; askPrice = round100(askPrice * 1.08); trueValue = round100(trueValue * 1.25); }
   const isBlack = !!(story && story.risk);
   const scamChance = isBlack ? story.risk : 0;
   let estimate = round100(marketValue * rnd(0.88, 1.12));
   if (S.skills.inspect >= 2) estimate = round100(marketValue * rnd(0.94, 1.06));
   updatePriceHistory(t.id, marketValue);
   const stock = ri(1, 3);
-  return { id: ++idc, itemId: t.id, name: t.name, emoji: t.emoji, slug: t.slug, cat: t.cat, condition, marketValue, trueValue, defect, askPrice, estimate, stock, inspected: false, tier, story, isBlack, scamChance, brand: t.brand, icon: t.icon };
+  return { id: ++idc, itemId: t.id, name: t.name, emoji: t.emoji, slug: t.slug, cat: t.cat, condition, marketValue, trueValue, defect, askPrice, estimate, stock, inspected: false, tier, story, isBlack, scamChance, golden, brand: t.brand, icon: t.icon };
 }
 function makeOrder() {
   if (S.orders.filter(o => !o.done && !o.failed).length >= 3) return;
   /* заказы только на доступные товары — иначе заказ может быть невыполнимым */
   const pool = ITEMS.filter(repAllowsItem);
   const t = pick(pool.length ? pool : ITEMS);
-  const bonus = rnd(0.15, 0.30);
+  const bonus = rnd(0.08, 0.20);
   const baseValue = round100(t.base * rnd(0.9, 1.1));
   S.orders.push({ id: ++idc, itemId: t.id, name: t.name, emoji: t.emoji, slug: t.slug, icon: t.icon || ICON_FIX[t.slug], reward: round100(baseValue * (1 + bonus)), deadline: S.day + ri(3, 5), bonus: Math.round(bonus * 100), done: false, failed: false });
 }
@@ -2973,6 +3432,7 @@ function expandMarket() {
   return added;
 }
 function newMarket() {
+  ensureItemTrends();
   S.dailyDemand = Math.random() < 0.6 ? { cat: pick(['tech', 'home', 'sport', 'hobby', 'fashion']), mult: rnd(1.15, 1.4) } : null;
   const target = marketSize();
   const keep = S.market.slice(0, Math.max(1, Math.floor(S.market.length / 2)));
@@ -3006,6 +3466,14 @@ function unlockAch(id) {
   playSound('ach'); haptic(30);
   checkRich();
 }
+function showAchHint(id) {
+  const a = ACHIEVEMENTS.find(x => x.id === id);
+  if (!a) return;
+  const h = ((ACH_HINTS[id] || {})[S.lang]) || nm(a.desc);
+  const rw = ACH_REWARDS[id];
+  const done = !!S.achievements[id];
+  showSheet(`<div class="drag-handle"></div><h2><span class="btn-ico">${a.emoji}</span> ${nm(a.name)} ${done ? '✅' : ''}</h2><div class="hint" style="border-left-color:var(--primary)"><b>${t('ach_how')}</b><br>${escHtml(h)}</div>${rw && rw.money ? `<div class="rec-row" style="margin-top:10px"><span>${t('ach_reward_lbl')}</span><b class="good">+${fmt(rw.money)} · ${a.points} SP</b></div>` : ''}<button class="btn-primary btn-full" onclick="closeSheet()">${t('ok_btn')}</button>`);
+}
 function checkAch() {
   const st = S.stats;
   /* пойманный тренд — тот же товар, чья цена изменилась больше чем на 15% */
@@ -3015,9 +3483,19 @@ function checkAch() {
     return Math.abs((h[h.length - 1] - h[0]) / h[0] * 100) >= 15;
   });
   const checks = [
-    [st.deals >= 1, 'first_sale'], [st.deals >= 10, 'ten_sales'], [st.deals >= 50, 'fifty_sales'], [st.deals >= 100, 'hundred_sales'],
-    [st.bestDeal >= 30000, 'big_deal'], [st.cleanStreak >= 5, 'no_defects_5'], [st.ordersDone >= 1, 'first_order'],
-    [S.money >= 1000000, 'million'], [S.rep >= 100, 'rep_max'], [bizLevel() >= 2, 'biz2'], [bizLevel() >= 4, 'biz4'], [S.prestige > 0, 'prestige1'],
+    [st.deals >= 1, 'first_sale'], [st.deals >= 10, 'ten_sales'], [st.deals >= 25, 'deals_25'], [st.deals >= 50, 'fifty_sales'], [st.deals >= 100, 'hundred_sales'], [st.deals >= 200, 'deals_200'],
+    [st.bestDeal >= 30000, 'big_deal'], [st.bestDeal >= 100000, 'big_deal_100k'], [st.cleanStreak >= 5, 'no_defects_5'], [st.cleanStreak >= 10, 'clean_10'],
+    [st.ordersDone >= 1, 'first_order'], [st.ordersDone >= 10, 'order_10'], [st.repairsDone >= 10, 'repair_10'],
+    [st.defectsFound >= 10, 'defect_10'], [st.bestDayEarnings >= 100000, 'day_earn_100k'],
+    [(st.auctionsWon || 0) >= 1, 'auction_win'], [(st.auctionsWon || 0) >= 5, 'auction_5'],
+    [(st.storedCount || 0) >= 1, 'storage_use'], [(st.palletsBought || 0) >= 3, 'pallet_3'],
+    [S.money >= 100000, 'rich_100k'], [S.money >= 1000000, 'million'], [S.rep >= 100, 'rep_max'],
+    [bizLevel() >= 2, 'biz2'], [bizLevel() >= 4, 'biz4'], [S.prestige > 0, 'prestige1'], [S.prestige >= 3, 'prestige_3'],
+    [S.day >= 30, 'day_30'], [S.day >= 100, 'day_100'], [S.level >= 10, 'level_10'], [S.level >= 20, 'level_20'],
+    [(S.dailyStreak || 0) >= 7, 'streak_7'], [S.assistant >= 3, 'assistant_3'], [S.transport >= 3, 'transport_max'],
+    [Object.keys(S.collection || {}).length >= 20, 'coll_20'], [Object.keys(S.collection || {}).length >= ITEMS.length, 'coll_all'],
+    [S.up.inventory >= INV_SIZES.length - 1, 'max_inventory'],
+    [(S.skills.trade >= 3 || S.skills.inspect >= 3 || S.skills.logistics >= 3), 'skill_3'],
     [trendCaught, 'trends']
   ];
   for (const [cond, id] of checks) if (cond) unlockAch(id);
@@ -3161,6 +3639,17 @@ function sparkline(hist) {
     <path d="${d}" fill="none" stroke="${col}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
 }
+/* мемо-кэш спарклайнов: SVG строится один раз на историю цен товара */
+const _sparkMemo = new Map();
+function sparklineCached(itemId) {
+  const h = (S.priceHistory || {})[itemId];
+  const sig = h && h.length ? h.join(',') : '';
+  const m = _sparkMemo.get(itemId);
+  if (m && m.sig === sig) return m.html;
+  const html = sparkline(h ? h.slice(-8) : []);
+  _sparkMemo.set(itemId, { sig, html });
+  return html;
+}
 function priceTrend(itemId) {
   const h = (S.priceHistory || {})[itemId];
   if (!h || h.length < 2) return { pct: 0, hist: [] };
@@ -3180,6 +3669,55 @@ function renderStoryCard() {
   if (!st) return '';
   return `<div class="story-card"><div class="t"><span class="story-ico">${ico(STORY_ICON[st.id] || 'flag')}</span> ${nm(st.title)}</div><div class="d">${nm(st.text)}</div><div style="font-size:var(--f-sm);color:var(--text-3);font-weight:800;text-transform:uppercase;letter-spacing:0.06em">${t('story_pick')}</div>${st.choices.map((c, i) => `<button class="btn-ghost story-choice" data-act="story" data-id="${st.id}" data-choice="${i}">${nm(c.label)}</button>`).join('')}</div>`;
 }
+/* ─────────────────────────────────────────────────────────
+   ДНЕВНОЙ ИНДЕКС ЦЕН: сколько стоит типичный экземпляр
+   товара сегодня. Живёт в S.itemTrend, обновляется раз в день:
+   случайное блуждание ±3% + толчок от событий категории.
+   На его основе работает рыночная лента.
+   ───────────────────────────────────────────────────────── */
+function itemDayBase(t) {
+  return round100(t.base * (currentSeason().mods[t.cat] || 1));
+}
+function ensureItemTrends() {
+  if (!S.itemTrend || typeof S.itemTrend !== 'object') S.itemTrend = {};
+  for (const it of ITEMS) {
+    if (!S.itemTrend[it.id] || !Array.isArray(S.itemTrend[it.id]) || !S.itemTrend[it.id].length) {
+      S.itemTrend[it.id] = [itemDayBase(it)];
+    }
+  }
+}
+function pushDayTrends() {
+  if (!S.itemTrend || typeof S.itemTrend !== 'object') S.itemTrend = {};
+  for (const it of ITEMS) {
+    const h = S.itemTrend[it.id] || (S.itemTrend[it.id] = [itemDayBase(it)]);
+    const prev = h[h.length - 1] || itemDayBase(it);
+    let v = prev * rnd(0.97, 1.03);
+    const ev = S.event;
+    if (ev && (ev.effect === 'sellBoost' && ev.cat === it.cat || ev.effect === 'sellBoostAll')) v *= 1.06;
+    const floor = itemDayBase(it) * 0.6, ceil = itemDayBase(it) * 1.6;
+    h.push(Math.max(floor, Math.min(ceil, round100(v))));
+    while (h.length > 14) h.shift();
+  }
+}
+/* Рыночная лента: самые сильные дневные движения цен */
+function renderTicker() {
+  if (!S.itemTrend) return '';
+  const rows = [];
+  for (const id of Object.keys(S.itemTrend)) {
+    const h = S.itemTrend[id];
+    if (!Array.isArray(h) || h.length < 2) continue;
+    const item = ITEMS_BY_ID.get(id);
+    if (!item) continue;
+    const prev = h[h.length - 2];
+    if (!prev) continue;
+    const pct = Math.round((h[h.length - 1] - prev) / prev * 100);
+    if (Math.abs(pct) < 1) continue;
+    rows.push({ item, pct });
+  }
+  rows.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+  if (!rows.length) return '';
+  return `<div class="ticker"><span class="ticker-lbl">${ico('chart')}</span><div class="ticker-row">${rows.slice(0, 6).map(r => `<span class="tick ${r.pct < 0 ? 'down' : 'up'}">${ico(r.pct < 0 ? 'trendDown' : 'trendUp')}<b>${itemName(r.item)}</b>${r.pct > 0 ? '+' : ''}${r.pct}%</span>`).join('')}</div></div>`;
+}
 function renderTrends() {
   if (!repHas('prices')) return '';
   const rows = Object.keys(S.priceHistory || {}).map(id => {
@@ -3193,12 +3731,27 @@ function renderTrends() {
   if (!rows.length) return `<div class="section-title">${t('trends_title')}</div><div class="lock-note">${t('trend_none')}</div>`;
   return `<div class="section-title">${t('trends_title')}</div>` + rows.map(r => `<div class="card" style="padding:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-weight:700;font-size:var(--f-base)">${itemName(r.item)}</span><b class="${r.pct >= 0 ? 'trend-up' : 'trend-down'}">${r.pct >= 0 ? t('tag_trend_up') : t('tag_trend_down')} ${Math.abs(r.pct)}%</b></div>${sparkline(r.hist)}</div>`).join('');
 }
+let _lastCountHtml = '';
 function updateResultCount() {
   const el = $('resultCount');
   if (!el) return;
   const n = getFilteredMarket().length;
-  el.innerHTML = `📊 ${t('found_label')}: <b>${n}</b> ${plural(n, t('lot1'), t('lot2'), t('lot5'))}`;
+  const html = `${ico('chart')} ${t('found_label')}: <b>${n}</b> ${plural(n, t('lot1'), t('lot2'), t('lot5'))}`;
+  /* пишем в DOM только когда текст реально изменился */
+  if (html !== _lastCountHtml) { _lastCountHtml = html; el.innerHTML = html; }
 }
+/* ═══════════════════════════════════════════════════════
+   ПУСТЫЕ СОСТОЯНИЯ: иконка + заголовок + подсказка
+   ═══════════════════════════════════════════════════════ */
+function emptyState(icon, title, hint, action) {
+  return `<div class="empty">${ico(icon || 'box')}<div class="empty-t">${title}</div>${hint ? `<div class="empty-h">${hint}</div>` : ''}${action || ''}</div>`;
+}
+/* сброс поиска и фильтра одной кнопкой из пустого состояния */
+window.resetFilters = () => {
+  S.search = ''; S.filter = 'all';
+  const i = $('searchInput'); if (i) i.value = '';
+  render();
+};
 function renderMarketCard(it) {
     const known = isKnown(it);
     const shown = known ? it.trueValue : (it.estimate || it.marketValue || 0);
@@ -3217,18 +3770,21 @@ function renderMarketCard(it) {
     if (S.dailyDemand && it.cat === S.dailyDemand.cat) tags.push(`<span class="tag tag-demand">${ico('flame')}${t('tag_demand')}</span>`);
     if (it.tier === 'rare') tags.push(`<span class="tag tag-rare">${ico('diamond')}${t('tag_rare')}</span>`);
     if (it.tier === 'premium') tags.push(`<span class="tag tag-premium">${ico('crown')}${t('tag_premium')}</span>`);
+    if (it.golden) tags.push(`<span class="tag tag-gold">${ico('sparkle')}GOLD</span>`);
     if (it.story) tags.push(`<span class="tag tag-story">${ico('flag')}${nm(it.story.text)}</span>`);
     if (isHot) tags.push(`<span class="tag tag-hot">${ico('bolt')}${t('tag_hot')}</span>`);
     if (showPrices && tr.pct) tags.push(`<span class="tag ${tr.pct > 0 ? 'trend-up' : 'trend-down'}">${ico(tr.pct > 0 ? 'trendUp' : 'trendDown')}${Math.abs(tr.pct)}%</span>`);
 
-    return `<div class="card ${isHot ? 'hot' : ''}">
+    const condPct = Math.round(it.condition * 100);
+    return `<div class="card ${isHot ? 'hot' : ''} ${it.golden ? 'golden' : ''}">
+      ${known && diff ? `<div class="profit-badge${diff < 0 ? ' neg' : ''}">${ico(diff > 0 ? 'trendUp' : 'trendDown')}${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))}</div>` : ''}
       <div class="card-top">
         <div class="emoji-box ${it.cat}${iconBroken(it) ? ' no-img' : ''}" data-fb="${it.emoji}">${getIconHtml(it)}</div>
         <div class="info">
           <div class="name">${itemName(it)}</div>
-          <div class="cond">${Math.round(it.condition * 100)}% · ${it.story ? nm(it.story.text) : t('cond_good')}</div>
+          <div class="cond"><span class="cond-bar"><i style="width:${condPct}%"></i></span><span>${condPct}% · ${it.story ? nm(it.story.text) : t('cond_good')}</span></div>
           ${tags.length ? `<div class="tags-row">${tags.join('')}</div>` : ''}
-          ${sparkline(tr.hist)}
+          ${sparklineCached(it.itemId)}
         </div>
       </div>
       <div class="rows">
@@ -3287,13 +3843,18 @@ function renderMarket() {
   if (S.onboardingStep === 1 && S.market.length > 0) html += `<div class="onboarding-tip"><span class="arrow">👇</span> ${t('tip_inspect')}</div>`;
   else if (S.onboardingStep === 2) html += `<div class="onboarding-tip"><span class="arrow">💬</span> ${t('tip_write')}</div>`;
 
+  html += renderTicker();
   html += renderGoalCard();
   if (S.storyQuest && !S.storyDone) html += renderStoryCard();
 
   if (S.auction && S.auction.active) {
-    html += `<div class="auction-card"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:900;font-size:16px;">${t('auction_head')}</span></div><div style="display:flex;gap:10px;align-items:center;"><div style="width:52px;height:52px;background:rgba(255,255,255,0.25);border-radius:14px;display:grid;place-items:center;">${getIconHtml(S.auction.item)}</div><div><div style="font-weight:800;font-size:15px;">${itemName(S.auction.item)}</div><div style="font-size:12px;opacity:0.9;">${t('auction_bid')}: ${fmt(S.auction.currentBid)}</div></div></div><button class="auction-btn" onclick="startAuction()">${t('auction_join')}</button></div>`;
+    if (auction) {
+      /* аукцион идёт: живой чип со ставкой и таймером */
+      html += `<div class="auction-card"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:900;font-size:16px;">${t('auction_head')}</span><span class="auc-live" id="aucChipTimer">${t('sec_short', { n: Math.max(0, auction.timer) })}</span></div><div style="display:flex;gap:10px;align-items:center;"><div style="width:52px;height:52px;background:rgba(255,255,255,0.25);border-radius:14px;display:grid;place-items:center;">${getIconHtml(auction.item)}</div><div><div style="font-weight:800;font-size:15px;">${itemName(auction.item)}</div><div style="font-size:12px;opacity:0.9;" id="aucChipBid">${t('auction_bid')}: ${fmt(auction.bid)}</div></div></div><button class="auction-btn" onclick="backToAuction()">${t('auction_back')}</button></div>`;
+    } else {
+      html += `<div class="auction-card"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:900;font-size:16px;">${t('auction_head')}</span></div><div style="display:flex;gap:10px;align-items:center;"><div style="width:52px;height:52px;background:rgba(255,255,255,0.25);border-radius:14px;display:grid;place-items:center;">${getIconHtml(S.auction.item)}</div><div><div style="font-weight:800;font-size:15px;">${itemName(S.auction.item)}</div><div style="font-size:12px;opacity:0.9;">${t('auction_start')}: ${fmt(S.auction.currentBid)}</div></div></div><button class="auction-btn" onclick="startAuction()">${t('auction_join')}</button></div>`;
+    }
   }
-
   html += renderTrends();
   /* тулбар — прямо перед товарами; он же липнет к верху при прокрутке */
   html += renderToolbar();
@@ -3332,11 +3893,11 @@ function renderInv() {
     S.inv.length ? `<div style="font-size:var(--f-sm);font-weight:800;color:var(--text-3)">${t('market_real')}: <b style="color:var(--green)">${fmt(S.inv.reduce((s, i) => s + i.trueValue, 0))}</b></div>` : '');
   html += `<div class="section-title">${t('inv_title')} ${S.inv.length}/${slots}</div>`;
   if (S.onboardingStep === 3 && S.inv.length > 0) html += `<div class="onboarding-tip"><span class="arrow">💬</span> ${t('tip_sell')}</div>`;
-  if (!S.inv.length) html += `<div class="empty">${t('inv_empty')}</div>`;
+  if (!S.inv.length) html += emptyState('bag', t('inv_empty'), t('inv_empty_hint'));
   else html += `<div id="hostInv"></div>`;
   if (storeCap > 0) {
     html += `<div class="section-title">${t('storage_title')} ${S.storage.length}/${storeCap}</div>`;
-    if (!S.storage.length) html += `<div class="empty">${t('storage_empty')}</div>`;
+    if (!S.storage.length) html += emptyState('box', t('storage_empty'), t('storage_empty_hint'));
     else html += `<div id="hostStorage"></div>`;
     const inc = storageIncome();
     if (inc) html += `<div class="lock-note">${t('storage_income', { n: fmt(inc) })}</div>`;
@@ -3357,11 +3918,11 @@ function renderOrders() {
     `${actN} · ${t('quests_title')}: ${(S.quests || []).length}`,
     `<div style="font-size:var(--f-sm);font-weight:800;color:var(--text-3)">${t('st_earned')}: <b style="color:var(--green)">${fmt(S.stats.totalEarned)}</b></div>`);
   html += `<div class="section-title">${t('quests_title')}</div>`;
-  if (!S.quests || !S.quests.length) html += `<div class="empty">${t('quests_empty')}</div>`;
+  if (!S.quests || !S.quests.length) html += emptyState('list', t('quests_empty'), t('quests_empty_hint'));
   else html += S.quests.map(q => `<div class="quest-item ${q.claimed ? 'done' : ''}"><div><div class="quest-text">${q.text}</div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">${q.current} / ${q.target}</div></div><div class="quest-reward">+${fmt(q.reward)}</div></div>`).join('');
   const active = S.orders.filter(o => !o.done && !o.failed);
   html += `<div class="section-title">${t('orders_title')}</div>`;
-  if (!active.length) html += `<div class="empty">${t('order_no_items')}</div>`;
+  if (!active.length) html += emptyState('clipboard', t('order_no_items'), t('order_no_items_hint'));
   else html += `<div id="hostOrders"></div>`;
   return html;
 }
@@ -3388,6 +3949,12 @@ function renderBiz() {
     const can = S.money >= p.price && S.inv.length + p.size <= invLimit();
     html += `<div class="card"><div class="card-top"><div class="emoji-box" style="background:var(--green-soft)">${ico('box')}</div><div class="info"><div class="name">${t('pallet_title', { n: p.size })}</div><div class="cond">${t('pallet_desc')}</div></div></div><div class="row"><span>${t('price_label')}</span><b>${fmt(p.price)}</b></div><button class="btn-buy btn-full" data-act="pallet" ${can ? '' : 'disabled'}>${can ? t('buy_btn') : (S.money < p.price ? t('no_money') : t('no_space'))}</button></div>`;
   }
+
+  html += `<div class="section-title">${t('case_title')}</div>`;
+  html += `<div class="case-grid">` + CASES.map(c => {
+    const canC = S.money >= c.cost && S.inv.length < invLimit();
+    return `<button class="case-card ${canC ? '' : 'off'}" data-act="caseBuy" data-id="${c.id}" ${canC ? '' : 'disabled'}><span class="case-emoji">${c.emoji}</span><span class="case-name">${nm(c.name)}</span><span class="case-cost">${fmt(c.cost)}</span></button>`;
+  }).join('') + `</div><div class="lock-note">${t('case_desc')}</div>`;
 
   html += `<div class="section-title">${t('skills_title')} · ${t('sp_label', { n: S.skillPoints })}</div>`;
   for (const [id, sk] of Object.entries(SKILLS)) {
@@ -3428,7 +3995,7 @@ function renderBlack() {
   if (!repHas('black')) return bh + `<div class="lock-note">${t('black_locked', { n: 75 })}</div>`;
   let html = bh + `<div class="lock-note">${t('black_warn')}</div>`;
   const lots = S.blackMarket || [];
-  if (!lots.length) return html + `<div class="empty">${t('market_none')}</div>`;
+  if (!lots.length) return html + emptyState('moon', t('market_none'), t('black_empty_hint'));
   const invFull = S.inv.length >= invLimit();
   html += lots.map(it => {
     const canBuy = S.money >= it.askPrice && !invFull;
@@ -3468,11 +4035,12 @@ function renderProfile() {
     <div class="stat-mini"><span class="l">${t('rec_orders')}</span><span class="v">${st.ordersDone}</span></div>
   </div>`;
 
-  /* ── Журнал действий ── */
-  html += `<div class="section-title">${t('prof_log')}</div>`;
+  /* ── Журнал действий: сворачивается, состояние запоминается ── */
   if (S.log && S.log.length) {
-    html += `<div class="card"><div class="stack">${S.log.slice().reverse().slice(0, 8).map(l => `<div class="rec-row"><span><span class="log-ico">${ico(l.icon || 'info')}</span>${escHtml(l.text)}</span><b>${t('log_day', { n: l.day })}</b></div>`).join('')}</div></div>`;
-  } else html += `<div class="empty">${t('log_empty')}</div>`;
+    const open = S.logOpen !== false;
+    const rows = S.log.slice().reverse().slice(0, 8).map(l => `<div class="rec-row"><span><span class="log-ico">${ico(l.icon || 'info')}</span>${escHtml(l.text)}</span><b>${t('log_day', { n: l.day })}</b></div>`).join('');
+    html += `<div class="card"><button class="log-toggle" data-act="logToggle" aria-label="${t('prof_log')}"><span class="log-t-l"><span class="log-ico">${ico('history')}</span>${t('prof_log')}</span><span class="log-arrow${open ? '' : ' closed'}">${ico('chevron')}</span></button>${open ? `<div class="stack">${rows}</div>` : ''}</div>`;
+  } else html += emptyState('history', t('log_empty'), t('log_empty_hint'));
 
   /* ── Рекорды ── */
   const recs = [
@@ -3495,15 +4063,31 @@ function renderProfile() {
   const doneGoals = S.goalsDone || [];
   if (doneGoals.length) {
     html += `<div class="card"><div class="stack">${doneGoals.slice(-6).reverse().map(g => `<div class="rec-row"><span>${goalText(g.type, g.target)}</span><b class="good">+${fmt(g.reward)}</b></div>`).join('')}</div></div>`;
-  } else html += `<div class="empty">${t('goals_none')}</div>`;
+  } else html += emptyState('target', t('goals_none'), t('goals_none_hint'));
   if (S.goal) html += `<div class="goal-card"><div class="t"><span class="goal-ico">${ico('target')}</span> ${goalText(S.goal.type, S.goal.target)}</div><div style="font-size:var(--f-sm);color:var(--text-2);font-weight:700">${t('goal_left', { n: fmt(Math.max(0, S.goal.target - S.goal.current)) })} · ${t('goal_reward', { n: fmt(S.goal.reward) })}</div><div class="goal-bar"><div style="width:${Math.min(100, Math.round(S.goal.current / S.goal.target * 100))}%"></div></div></div>`;
 
   /* ── Достижения ── */
   html += `<div class="section-title">${t('ach_title')} ${Object.keys(S.achievements).length}/${ACHIEVEMENTS.length}</div>`;
-  html += '<div class="ach-grid">' + ACHIEVEMENTS.map(a => `<div class="ach ${S.achievements[a.id] ? 'unlocked' : ''}"><span class="ach-ico">${ico(ACH_ICON[a.id] || 'star')}</span><span class="ach-name">${nm(a.name)}</span><span class="ach-desc">${nm(a.desc)}</span></div>`).join('') + '</div>';
+  html += '<div class="ach-grid">' + ACHIEVEMENTS.map(a => `<div class="ach ${S.achievements[a.id] ? 'unlocked' : ''}"><button class="ach-q" data-act="achHint" data-id="${a.id}" aria-label="?">?</button><span class="ach-ico">${ico(ACH_ICON[a.id] || 'star')}</span><span class="ach-name">${nm(a.name)}</span><span class="ach-desc">${nm(a.desc)}</span></div>`).join('') + '</div>';
+
+  /* ── График дохода ── */
+  if ((S.earnHistory || []).length >= 2) {
+    html += `<div class="section-title">${t('spark_title')}</div><div class="card"><canvas id="sparkCanvas" width="600" height="110" style="width:100%;height:56px"></canvas></div>`;
+    setTimeout(drawSparkline, 80);
+  }
 
   /* ── Престиж ── */
   if (S.money >= 5000000) html += `<div class="card" style="border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-soft);"><div style="font-size:16px;font-weight:900;color:var(--purple);display:flex;align-items:center;gap:8px;">♻️ ${t('prestige_title')}</div><div class="hint" style="background:var(--purple-soft);color:var(--purple);border-left-color:var(--purple);margin-top:4px">${t('prestige_desc', { m: (prestigeMult() * 1.2).toFixed(1) })}</div><button class="btn-primary btn-full" style="background:linear-gradient(135deg, var(--purple), #6d28d9);color:#fff;margin-top:8px" onclick="doPrestige()">${t('prestige_btn')}</button></div>`;
+
+  /* ── Альбом коллекционера ── */
+  {
+    const coll = S.collection || {};
+    const total = ITEMS.length;
+    const owned = ITEMS.filter(i => coll[i.id]).length;
+    const pct = total ? Math.round(owned / total * 100) : 0;
+    html += `<div class="section-title">${t('coll_title')} · ${owned}/${total}</div>`;
+    html += `<div class="card"><div class="coll-bar"><div class="coll-fill" style="width:${pct}%"></div></div><div class="coll-grid">` + ITEMS.map(i => `<div class="coll-cell ${coll[i.id] ? 'on' : ''}" title="${escHtml(nm(i.name))}">${coll[i.id] ? i.emoji : '?'}</div>`).join('') + `</div></div>`;
+  }
 
   /* ── Настройки ── */
   html += `<div class="section-title">${t('accent_title')}</div>`;
@@ -3559,84 +4143,133 @@ function doPrestige() {
     S.up = { inventory: 0, market: 0, analytics: false, vip: false, negotiation: false, accountant: false };
     S.transport = 0; S.skills = { trade: 0, inspect: 0, logistics: 0 }; S.skillPoints = 0; S.credit = 0; S.pallet = null;
     S.auction = null; S.wasRich = false; S.lastBizLevel = 0; S.onboardingStep = 0;
-    S.priceHistory = {}; S.blackMarket = []; S.assistant = 0; S.goal = null; S.storyQuest = null; S.storyDone = false; S.goalsDone = [];
+    S.priceHistory = {}; S.itemTrend = {}; S.blackMarket = []; S.assistant = 0; S.goal = null; S.storyQuest = null; S.storyDone = false; S.goalsDone = [];
+    if (auction) { cleanupAuctionTimers(); auction = null; }
     auctionActive = false; _cache.bizLevelKey = -1; _cache.invLimitKey = '';
     newMarket(); makeOrder(); generateQuests(); newGoal(); newStoryQuest(); checkAch(); showConfetti(50); render();
     showAlert(t('prestige_done'), `×${prestigeMult().toFixed(1)}!`, '🏆');
   }, true);
 }
 
+
+/* ═══ АУКЦИОН (переписан): живое состояние не сохраняется, ═══ */
+/* боты с индивидуальными потолками, закрыл лист — аукцион идёт дальше */
+let auction = null;
+function cleanupAuctionTimers() {
+  const a = auction; if (!a) return;
+  if (a.intervalId) { clearInterval(a.intervalId); a.intervalId = null; }
+  (a.bots || []).forEach(b => { if (b.tid) clearTimeout(b.tid); });
+}
 function startAuction() {
-  if (!S.auction || auctionActive) return;
-  const a = S.auction;
-  let current = a.currentBid, timer = 15, botWait = false, playerBid = false, finished = false, intervalId = null, sheetShown = false;
+  if (!S.auction || auction) return;
+  if (S.inv.length >= invLimit()) { toast(t('no_space'), 'error'); return; }
+  const a0 = S.auction;
+  auction = {
+    item: a0.item, bid: a0.currentBid, myBid: 0, timer: 20, finished: false, open: true,
+    bots: [
+      { cap: round100(a0.botMax * rnd(0.80, 1.10)), delay: 1200 + Math.random() * 900 },
+      { cap: round100(a0.botMax * rnd(0.80, 1.10)), delay: 1800 + Math.random() * 1100 },
+      { cap: round100(a0.botMax * rnd(0.80, 1.10)), delay: 2500 + Math.random() * 1400 }
+    ],
+    intervalId: null
+  };
   auctionActive = true;
-  const endWin = () => {
-    if (finished) return; finished = true;
-    if (intervalId) { clearInterval(intervalId); intervalId = null; }
-    auctionActive = false;
-    if (!S.auction) return;
-    if (S.inv.length >= invLimit()) { toast(t('no_space') + ' — ' + t('auction_lost'), 'error'); S.auction = null; closeSheet(); render(); return; }
-    if (S.money < current) { toast(t('no_money'), 'error'); S.auction = null; closeSheet(); render(); return; }
-    S.money -= current; S.stats.totalSpent += current; S.stats.itemsBought++;
-    a.item.askPrice = current; S.inv.push(a.item); S.auction = null;
-    closeSheet(); showConfetti(30); flyCoins(8); render();
-    showAlert(t('auction_won'), `${fmt(current)}`, '🎉'); playSound('buy');
-  };
-  const endLose = (reason) => {
-    if (finished) return; finished = true;
-    if (intervalId) { clearInterval(intervalId); intervalId = null; }
-    auctionActive = false; S.auction = null; closeSheet(); render();
-    if (reason) toast(reason, 'error');
-  };
-  const updateAuction = () => {
-    if (finished) return;
-    /* если окно аукциона закрыли/заменили — таймер останавливаем */
-    if (sheetShown && !document.querySelector('.auction-sheet')) {
-      if (intervalId) { clearInterval(intervalId); intervalId = null; }
-      finished = true; auctionActive = false;
-      return;
-    }
-    const can1000 = S.money >= current + 1000;
-    const can5000 = S.money >= current + 5000;
-    const can10000 = S.money >= current + 10000;
-    /* разметка строится один раз, дальше меняются только цифры и кнопки —
-       иначе весь лист перерисовывался каждую секунду и "мигал" */
-    const bidEl = $('auctionBid'), timeEl = $('auctionTimer');
-    if (!bidEl || !timeEl) { sheetShown = false; return; }
-    bidEl.textContent = fmt(current);
-    timeEl.textContent = t('auction_timer', { n: timer });
-    const b1000 = $('auctionBid1000'), b5000 = $('auctionBid5000'), b10000 = $('auctionBid10000');
-    if (b1000) b1000.disabled = timer <= 0 || botWait || !can1000;
-    if (b5000) b5000.disabled = timer <= 0 || botWait || !can5000;
-    if (b10000) b10000.disabled = timer <= 0 || botWait || !can10000;
-  };
-  const buildAuctionSheet = () => {
-    showSheet(`<div class="drag-handle auction-sheet"><h2>${t('auction_head')}</h2><div style="text-align:center;padding:10px 0;"><div style="width:80px;height:80px;margin:0 auto 10px;background:var(--surface-2);border-radius:20px;display:grid;place-items:center;">${getIconHtml(a.item)}</div><div style="font-weight:900;font-size:18px;margin-bottom:4px;">${itemName(a.item)}</div></div><div style="background:var(--surface-2);padding:16px;border-radius:16px;text-align:center;"><div style="font-size:12px;color:var(--text-3);font-weight:800;text-transform:uppercase;">${t('auction_bid')}</div><div style="font-size:36px;font-weight:900;color:var(--primary);margin:8px 0;" id="auctionBid">${fmt(current)}</div><div style="font-size:13px;font-weight:800;color:var(--red);" id="auctionTimer">${t('auction_timer', { n: timer })}</div></div><div class="actions" style="display:grid;grid-template-columns:1fr 1fr;"><button class="btn-primary" id="auctionBid1000" onclick="bidAuction(1000)">+1000</button><button class="btn-primary" id="auctionBid5000" onclick="bidAuction(5000)">+5000</button></div><div class="actions" style="display:grid;grid-template-columns:1fr;"><button class="btn-primary" id="auctionBid10000" onclick="bidAuction(10000)">+10000</button></div><button class="btn-ghost btn-full" onclick="abortAuction()">${t('auction_leave')}</button>`);
-    sheetShown = true;
-  };
-  window.bidAuction = (amount) => {
-    if (finished || timer <= 0 || botWait) return;
-    if (S.money < current + amount) { toast(t('no_money'), 'error'); return; }
-    current += amount; playerBid = true; playSound('click');
-    timer = Math.max(timer, 5); botWait = true; updateAuction();
-    setTimeout(() => {
-      if (finished) return;
-      if (current >= a.botMax) { endWin(); }
-      else { current += (Math.random() < 0.5 ? 1000 : 2000); botWait = false; timer = Math.max(timer, 5); updateAuction(); playSound('error'); }
-    }, 1500 + Math.random() * 1000);
-  };
-  window.abortAuction = () => endLose(t('auction_leave'));
-  intervalId = setInterval(() => {
-    if (finished) { clearInterval(intervalId); intervalId = null; return; }
-    timer--; updateAuction();
-    if (timer <= 0) {
-      clearInterval(intervalId); intervalId = null;
-      setTimeout(() => { if (finished) return; if (playerBid && !botWait) endWin(); else endLose(t('auction_lost')); }, 800);
-    }
-  }, 1000);
-  buildAuctionSheet();
-  updateAuction();
+  auction.intervalId = setInterval(auctionTick, 1000);
+  renderAuctionSheet();
+  auction.bots.forEach(b => { b.tid = setTimeout(() => auctionBotStep(b), b.delay); });
+}
+function auctionTick() {
+  const a = auction; if (!a || a.finished) return;
+  a.timer--;
+  updateAuctionHud();
+  if (a.timer <= 0) finishAuction();
+}
+function auctionBotStep(bot) {
+  const a = auction;
+  if (!a || a.finished) return;
+  const step = pick([1000, 1000, 2000, 3000, 5000]);
+  if (a.bid + step <= bot.cap) {
+    a.bid += step;
+    addAuctionLog('🤖 ' + t('auction_bot_bid', { n: fmt(a.bid) }), '');
+    playSound('error');
+    a.timer = Math.max(a.timer, 6);
+    updateAuctionHud();
+  }
+  bot.tid = setTimeout(() => auctionBotStep(bot), bot.delay + Math.random() * 900);
+}
+function addAuctionLog(text, cls) {
+  const box = $('aucLog'); if (!box) return;
+  box.insertAdjacentHTML('afterbegin', `<div class="al-row ${cls || ''}"><span>${escHtml(text)}</span></div>`);
+  while (box.children.length > 6) box.removeChild(box.lastChild);
+}
+function renderAuctionSheet() {
+  const a = auction; if (!a) return;
+  showSheet(`<div class="drag-handle auction-sheet"><h2>${t('auction_head')}</h2><div style="text-align:center;padding:6px 0;"><div style="width:80px;height:80px;margin:0 auto 10px;background:var(--surface-2);border-radius:20px;display:grid;place-items:center;">${getIconHtml(a.item)}</div><div style="font-weight:900;font-size:18px;margin-bottom:4px;">${itemName(a.item)}</div></div><div style="background:var(--surface-2);padding:14px;border-radius:16px;text-align:center;"><div style="font-size:12px;color:var(--text-3);font-weight:800;text-transform:uppercase;">${t('auction_bid')}</div><div style="font-size:36px;font-weight:900;color:var(--primary);margin:6px 0;" id="auctionBid">${fmt(a.bid)}</div><div style="font-size:13px;font-weight:800;color:var(--red);" id="auctionTimer">${t('auction_timer', { n: a.timer })}</div></div><div class="auc-log" id="aucLog"></div><div class="actions" style="display:grid;grid-template-columns:1fr 1fr;"><button class="btn-primary" id="auctionBid1000" onclick="bidAuction(1000)">+1000</button><button class="btn-primary" id="auctionBid5000" onclick="bidAuction(5000)">+5000</button></div><div class="actions" style="display:grid;grid-template-columns:1fr;"><button class="btn-primary" id="auctionBid10000" onclick="bidAuction(10000)">+10000</button></div><button class="btn-ghost btn-full" onclick="abortAuction()">${t('auction_leave')}</button></div>`);
+}
+function updateAuctionHud() {
+  const a = auction; if (!a) return;
+  const bidEl = $('auctionBid'), timeEl = $('auctionTimer');
+  if (bidEl) bidEl.textContent = fmt(a.bid);
+  if (timeEl) { timeEl.textContent = t('auction_timer', { n: a.timer }); timeEl.style.color = a.timer <= 5 ? 'var(--red)' : 'var(--text-2)'; }
+  const lead = a.myBid > 0 && a.myBid >= a.bid;
+  const b1000 = $('auctionBid1000'), b5000 = $('auctionBid5000'), b10000 = $('auctionBid10000');
+  if (b1000) b1000.disabled = a.finished || a.timer <= 0 || S.money < a.bid + 1000;
+  if (b5000) b5000.disabled = a.finished || a.timer <= 0 || S.money < a.bid + 5000;
+  if (b10000) b10000.disabled = a.finished || a.timer <= 0 || S.money < a.bid + 10000;
+  /* живой чип на карточке рынка — обновляется даже при закрытом листе */
+  const cb = $('aucChipBid'), ct = $('aucChipTimer');
+  if (cb) cb.textContent = (lead ? t('auction_you_bid', { n: fmt(a.bid) }) : t('auction_bid') + ': ' + fmt(a.bid));
+  if (ct) ct.textContent = t('sec_short', { n: Math.max(0, a.timer) });
+}
+function bidAuction(amount) {
+  const a = auction;
+  if (!a || a.finished || a.timer <= 0) return;
+  amount = Math.round(Number(amount) || 0);
+  if (amount <= 0) return;
+  if (S.money < a.bid + amount) { toast(t('no_money'), 'error'); return; }
+  a.bid += amount; a.myBid = a.bid;
+  addAuctionLog('👤 ' + t('auction_you_bid', { n: fmt(a.bid) }), 'me');
+  playSound('click'); haptic(20);
+  a.timer = Math.max(a.timer, 6);
+  updateAuctionHud();
+}
+function finishAuction() {
+  const a = auction; if (!a || a.finished) return;
+  a.finished = true;
+  cleanupAuctionTimers();
+  const won = a.myBid > 0 && a.myBid >= a.bid;
+  S.auction = null; auctionActive = false;
+  let showWin = false;
+  if (won && S.money >= a.myBid && S.inv.length < invLimit()) {
+    S.money -= a.myBid; S.stats.totalSpent += a.myBid; S.stats.itemsBought++;
+    S.stats.auctionsWon = (S.stats.auctionsWon || 0) + 1; checkAch();
+    a.item.askPrice = a.myBid; S.inv.push(a.item); markCollected(a.item);
+    logAction('bag', t('log_bought', { n: itemName(a.item), m: fmt(a.myBid) }));
+    showConfetti(30); flyCoins(8); playSound('buy'); haptic(40);
+    showWin = true;
+  } else if (won) {
+    toast(t('no_space') + ' — ' + t('auction_lost'), 'error');
+  } else {
+    toast(t('auction_lost'), 'error');
+  }
+  const wasOpen = a.open;
+  auction = null;
+  if (wasOpen) closeSheet(true);
+  render();
+  if (showWin) showAlert(t('auction_won'), fmt(a.myBid), '🎉');
+}
+function abortAuction() {
+  const a = auction; if (!a) return;
+  cleanupAuctionTimers();
+  auction = null; auctionActive = false; S.auction = null;
+  if (a.open) closeSheet(true);
+  render();
+}
+function backToAuction() {
+  if (!auction || auction.open) return;
+  auction.open = true;
+  renderAuctionSheet();
+  updateAuctionHud();
 }
 
 function startBuyChat(itemId) {
@@ -3654,9 +4287,9 @@ function startSellChat(itemId) {
   const it = S.inv.find(x => x.id === itemId);
   if (!it || chat) return;
   let buyer, isNpc = false;
-  if (Math.random() < 0.4) { const npc = pick(NPCS); let priceMult = 1.0; if (npc.cat === it.cat) priceMult = 1.25; else priceMult = 0.85; buyer = { id: npc.id, emoji: npc.emoji, name: npc.name, info: npc.info, priceMult, maxRaises: 1, raiseFactor: 1.1, isNpc: true }; isNpc = true; }
+  if (Math.random() < 0.4) { const npc = pick(NPCS); let priceMult = 1.0; if (npc.cat === it.cat) priceMult = 1.18; else priceMult = 0.78; buyer = { id: npc.id, emoji: npc.emoji, name: npc.name, info: npc.info, priceMult, maxRaises: 0, raiseFactor: 1.03, isNpc: true }; isNpc = true; }
   else buyer = pick(BUYERS);
-  let repMult = 0.9 + S.rep / 500;
+  let repMult = 0.85 + S.rep / 600;
   if (S.up.vip) repMult += 0.1;
   if (S.skills.trade >= 1) repMult += 0.03;
   if (S.skills.trade >= 2) repMult += 0.03;
@@ -3667,27 +4300,31 @@ function startSellChat(itemId) {
   let buyerPrice = it.trueValue * buyer.priceMult * repMult * demandMult * eventMult * eventAll * prestigeMult();
   if (buyer.detectsDefects && it.defect) buyerPrice *= 0.7;
   const maxPrice = round100(buyerPrice);
-  const offer = round100(maxPrice * rnd(0.72, 0.9));
+  const offer = round100(maxPrice * rnd(0.60, 0.82));
   chat = { type: 'sell', item: it, buyer, currentPrice: offer, maxPrice, raises: 0, maxRaises: buyer.maxRaises + (S.up.negotiation ? 1 : 0), messages: [{ from: 'other', text: isNpc ? t('msg_npc', { i: itemName(it), n: fmt(offer) }) : t('msg_hello_buy', { n: fmt(offer) }) }], completed: false, abandoned: false, keyboardOpen: false, keyboardValue: '', pending: false };
   playSound('message'); renderChat();
 }
 
+/* сообщения строятся «свежее сверху»: лента читается без прокрутки */
+function chatMessagesHtml(c, who) {
+  return c.messages.slice().reverse().map(m => `<div class="msg ${m.from === 'me' ? 'me' : 'other'}">${m.from === 'other' ? `<div class="msg-avatar">${who.emoji}</div>` : ''}<div class="msg-bubble">${m.text}</div></div>`).join('');
+}
+function chatActionsHtml(c) {
+  if (c.completed) { const btnText = c.type === 'buy' ? `${t('chat_take')} ${fmt(c.currentPrice)}` : `${t('chat_give')} ${fmt(c.currentPrice)}`; const btnClass = c.type === 'buy' ? 'btn-buy' : 'btn-sell'; return `<button class="${btnClass} btn-full" onclick="finalizeChat()">${btnText}</button>`; }
+  if (c.abandoned) return `<button class="btn-ghost btn-full" onclick="closeSheet()">${t('close_btn')}</button>`;
+  if (c.keyboardOpen) return renderKeyboard();
+  if (c.type === 'buy') { const p = c.currentPrice; const quick = QUICK_STEPS.map(s => { const np = p - s; return `<button ${np < 100 ? 'disabled' : `onclick="playerOfferBuy(${np})"`}>−${s}</button>`; }).join(''); return `<button class="btn-buy btn-full" onclick="playerOfferBuy(${p})" ${c.pending ? 'disabled' : ''}>${t('chat_take')} ${fmt(p)}</button><div class="quick-offers">${quick}</div><button class="btn-primary btn-full" onclick="openCustomKeyboard()">${t('chat_custom_price')}</button><button class="btn-ghost btn-sm" onclick="leaveChat()">${t('chat_leave')}</button>`; }
+  const p = c.currentPrice; const quick = QUICK_STEPS.map(s => `<button onclick="playerCounterSell(${p + s})">+${s}</button>`).join(''); return `<button class="btn-sell btn-full" onclick="playerAcceptSell(${p})" ${c.pending ? 'disabled' : ''}>${t('chat_give')} ${fmt(p)}</button><div class="quick-offers">${quick}</div><button class="btn-primary btn-full" onclick="openCustomKeyboard()">${t('chat_custom_price')}</button><button class="btn-ghost btn-sm" onclick="leaveChat()">${t('chat_leave')}</button>`;
+}
 function renderChat() {
   if (!chat) { closeSheet(); return; }
   const c = chat;
   const who = c.type === 'buy' ? c.seller : c.buyer;
   const title = c.type === 'buy' ? t('chat_seller') : nm(who.name);
   const status = c.abandoned ? t('chat_offline') : t('chat_online');
-  const messagesHtml = c.messages.map(m => `<div class="msg ${m.from === 'me' ? 'me' : 'other'}">${m.from === 'other' ? `<div class="msg-avatar">${who.emoji}</div>` : ''}<div class="msg-bubble">${m.text}</div></div>`).join('');
-  let actionsHtml = '';
-  if (c.completed) { const btnText = c.type === 'buy' ? `${t('chat_take')} ${fmt(c.currentPrice)}` : `${t('chat_give')} ${fmt(c.currentPrice)}`; const btnClass = c.type === 'buy' ? 'btn-buy' : 'btn-sell'; actionsHtml = `<button class="${btnClass} btn-full" onclick="finalizeChat()">${btnText}</button>`; }
-  else if (c.abandoned) { actionsHtml = `<button class="btn-ghost btn-full" onclick="closeSheet()">${t('close_btn')}</button>`; }
-  else if (c.keyboardOpen) { actionsHtml = renderKeyboard(); }
-  else if (c.type === 'buy') { const p = c.currentPrice; const quick = QUICK_STEPS.map(s => { const np = p - s; return `<button ${np < 100 ? 'disabled' : `onclick="playerOfferBuy(${np})"`}>−${s}</button>`; }).join(''); actionsHtml = `<button class="btn-buy btn-full" onclick="playerOfferBuy(${p})" ${c.pending ? 'disabled' : ''}>${t('chat_take')} ${fmt(p)}</button><div class="quick-offers">${quick}</div><button class="btn-primary btn-full" onclick="openCustomKeyboard()">${t('chat_custom_price')}</button><button class="btn-ghost btn-sm" onclick="leaveChat()">${t('chat_leave')}</button>`; }
-  else { const p = c.currentPrice; const quick = QUICK_STEPS.map(s => `<button onclick="playerCounterSell(${p + s})">+${s}</button>`).join(''); actionsHtml = `<button class="btn-sell btn-full" onclick="playerAcceptSell(${p})" ${c.pending ? 'disabled' : ''}>${t('chat_give')} ${fmt(p)}</button><div class="quick-offers">${quick}</div><button class="btn-primary btn-full" onclick="openCustomKeyboard()">${t('chat_custom_price')}</button><button class="btn-ghost btn-sm" onclick="leaveChat()">${t('chat_leave')}</button>`; }
   const messagesClass = 'chat-messages' + (c.keyboardOpen ? ' compact' : '');
-  showSheet(`<div class="drag-handle"></div><div class="chat-header"><div class="chat-avatar">${who.emoji}</div><div style="flex:1"><div class="chat-name">${title}</div><div class="chat-status ${c.abandoned ? 'offline' : ''}">${status}</div></div><div style="text-align:right;line-height:1.1"><div style="font-size:15px;font-weight:800;color:var(--text)">${fmt(c.currentPrice)}</div></div></div><div class="${messagesClass}" id="chatMessages">${messagesHtml}</div><div class="chat-actions">${actionsHtml}</div>`);
-  requestAnimationFrame(() => { const box = $('chatMessages'); if (box) box.scrollTop = box.scrollHeight; });
+  showSheet(`<div class="drag-handle"></div><div class="chat-header"><div class="chat-avatar">${who.emoji}</div><div style="flex:1"><div class="chat-name">${title}</div><div class="chat-status ${c.abandoned ? 'offline' : ''}" id="chatStatus">${status}</div></div><div style="text-align:right;line-height:1.1"><div style="font-size:15px;font-weight:800;color:var(--text)" id="chatPrice">${fmt(c.currentPrice)}</div></div></div><div class="${messagesClass}" id="chatMessages">${chatMessagesHtml(c, who)}</div><div class="chat-actions" id="chatActions">${chatActionsHtml(c)}</div>`);
+  requestAnimationFrame(() => { const box = $('chatMessages'); if (box) box.scrollTop = 0; });
 }
 
 function renderKeyboard() {
@@ -3698,8 +4335,8 @@ function renderKeyboard() {
   const submitDisabled = !value || Number(value) < 100;
   return `<div class="custom-keyboard"><div class="keyboard-display"><div class="keyboard-label">${isBuy ? t('chat_kb_ask') : t('chat_kb_give')}: ${fmt(c.currentPrice)}</div><div class="keyboard-value ${value ? '' : 'empty'}" id="keyboardValue">${value ? fmt(Number(value)) : '— ' + (CURRENCY[S.lang] || '₽')}</div></div><div class="keyboard-grid">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="key-btn" onclick="keyPress('${n}')">${n}</button>`).join('')}<button class="key-btn key-action" onclick="keyClear()">C</button><button class="key-btn" onclick="keyPress('0')">0</button><button class="key-btn key-action" onclick="keyBackspace()">⌫</button></div><div class="keyboard-bottom"><button class="btn-ghost" onclick="closeCustomKeyboard()">${t('cancel_btn')}</button><button class="btn-primary keyboard-submit" id="keyboardSubmit" onclick="keySubmit()" ${submitDisabled ? 'disabled' : ''}>${submitLabel}</button></div></div>`;
 }
-function openCustomKeyboard() { if (!chat) return; chat.keyboardOpen = true; chat.keyboardValue = ''; renderChat(); }
-function closeCustomKeyboard() { if (!chat) return; chat.keyboardOpen = false; chat.keyboardValue = ''; renderChat(); }
+function openCustomKeyboard() { if (!chat) return; chat.keyboardOpen = true; chat.keyboardValue = ''; updateChatUI(); }
+function closeCustomKeyboard() { if (!chat) return; chat.keyboardOpen = false; chat.keyboardValue = ''; updateChatUI(); }
 function keyPress(d) { if (!chat || !chat.keyboardOpen) return; if (chat.keyboardValue.length >= 7) return; if (chat.keyboardValue === '' && d === '0') return; chat.keyboardValue += d; playSound('key'); updateKeyboardDisplay(); }
 function keyBackspace() { if (!chat || !chat.keyboardOpen) return; chat.keyboardValue = chat.keyboardValue.slice(0, -1); playSound('key'); updateKeyboardDisplay(); }
 function keyClear() { if (!chat || !chat.keyboardOpen) return; chat.keyboardValue = ''; playSound('key'); updateKeyboardDisplay(); }
@@ -3746,11 +4383,25 @@ function appendMessage(from, text) {
   const div = document.createElement('div');
   div.className = 'msg ' + (from === 'me' ? 'me' : 'other');
   div.innerHTML = (from === 'other' ? `<div class="msg-avatar">${who.emoji}</div>` : '') + `<div class="msg-bubble">${text}</div>`;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
+  /* новые сообщения — в начало ленты: сразу видны без прокрутки */
+  box.prepend(div);
+  box.scrollTop = 0;
   playSound('message');
 }
-function updateChatUI() { if (!chat) return; renderChat(); }
+function updateChatUI() {
+  if (!chat) return;
+  const c = chat;
+  const box = $('chatMessages'), act = $('chatActions'), priceEl = $('chatPrice'), statusEl = $('chatStatus');
+  /* оптимизация: обновляем только изменившееся — цену, статус, кнопки.
+     Раньше лист пересобирался целиком на каждое сообщение: все узлы
+     пересоздавались, анимации всех сообщений переигрывались заново.
+     Текст сообщений уже в DOM — их добавляет appendMessage точечно */
+  if (!box || !act) { renderChat(); return; }
+  if (priceEl) priceEl.textContent = fmt(c.currentPrice);
+  if (statusEl) statusEl.textContent = c.abandoned ? t('chat_offline') : t('chat_online');
+  box.classList.toggle('compact', !!c.keyboardOpen);
+  act.innerHTML = chatActionsHtml(c);
+}
 
 function playerOfferBuy(amount) {
   const c = chat; if (!c || c.type !== 'buy' || c.completed || c.abandoned || c.pending || c.keyboardOpen) return;
@@ -3772,7 +4423,7 @@ function playerOfferBuy(amount) {
     else {
       c.patience = (Number.isFinite(c.patience) ? c.patience : 0) - 1;
       if (c.patience < 0) { appendMessage('other', t('msg_refuse')); c.abandoned = true; }
-      else { const counter = round100((amount + c.currentPrice) / 2); c.currentPrice = Math.max(counter, minPrice); appendMessage('other', t('msg_counter', { n: fmt(c.currentPrice) })); }
+      else { const counter = round100(amount + (c.currentPrice - amount) * 0.35); c.currentPrice = Math.max(counter, minPrice); appendMessage('other', t('msg_counter', { n: fmt(c.currentPrice) })); }
     }
     updateChatUI();
   }, 500 + Math.random() * 400);
@@ -3807,10 +4458,10 @@ function completeBuyFromChat() {
   it.askPrice = price;
   const copy = Object.assign({}, it, { id: ++idc, stock: 1 });
   S.market = S.market.filter(x => x.id !== it.id);
-  S.inv.push(copy);
+  S.inv.push(copy); markCollected(copy);
   flyCardToInventory(it.id);
   addXp(15); checkQuests('buy', 1);
-  if (it.isBlack) { unlockAch('black_bought'); if (Math.random() < it.scamChance) { setTimeout(() => { if (!S.inv.find(x => x.id === copy.id)) return; S.inv = S.inv.filter(x => x.id !== copy.id); S.rep = Math.max(0, S.rep - 15); playSound('error'); haptic(50); toast(`🚨 ${itemName(it)} изъят!`, 'error'); render(); }, 1200); } }
+  if (it.isBlack) { unlockAch('black_bought'); if (Math.random() < it.scamChance) { setTimeout(() => { if (!S.inv.find(x => x.id === copy.id)) return; S.inv = S.inv.filter(x => x.id !== copy.id); S.rep = Math.max(0, S.rep - 15); screenShake(); playSound('error'); haptic(50); toast(`🚨 ${itemName(it)} изъят!`, 'error'); render(); }, 1200); } }
   if (copy.defect) {
     if (!copy.inspected) { copy.inspected = true; S.stats.defectsFound++; }
     S.stats.cleanStreak = 0;
@@ -3839,12 +4490,12 @@ function completeSellFromChat() {
   S.inv = S.inv.filter(x => x.id !== it.id);
   let repGain = 3; if (profit > it.askPrice * 0.3) repGain = 5; if (profit < 0) repGain = 1;
   S.rep = Math.min(100, S.rep + repGain); refreshUnlocks();
-  addXp(20); checkQuests('sell', 1); if (profit > 0) checkQuests('earn', profit);
+  registerSale(profit); addXp(20); checkQuests('sell', 1); if (profit > 0) checkQuests('earn', profit);
   goalProgress('sell', 1); if (profit > 0) goalProgress('earn', profit);
   chat = null; playSound('sell'); haptic(20);
   flyCoins(Math.min(10, Math.max(3, Math.round(profit / 2000))));
   if (profit >= 15000) showConfetti(25);
-  toast(profit >= 0 ? t('msg_profit_up', { n: fmt(profit) }) : t('msg_profit_down', { n: fmt(profit) }), profit >= 0 ? 'success' : 'error');
+  toast((profit >= 0 ? t('msg_profit_up', { n: fmt(profit) }) : t('msg_profit_down', { n: fmt(profit) })) + comboLabel(), profit >= 0 ? 'success' : 'error');
   checkAch(); checkRich();
   if (S.onboardingStep === 3) S.onboardingStep = 4;
   closeSheet();
@@ -3864,8 +4515,8 @@ function repairItem(id) {
 }
 window.repairByMaster = (id) => { const it = S.inv.find(x => x.id === id); if (!it || !it.defect) return; const cost = round100(it.marketValue * 0.2); if (S.money < cost) return; S.money -= cost; S.stats.totalSpent += cost; it.defect = false; it.trueValue = it.marketValue; it.inspected = true; addXp(10); playSound('buy'); haptic(20); S.stats.repairsDone++; unlockAch('first_repair'); goalProgress('repair', 1); closeSheet(); };
 
-const MG_ROUNDS = [{ speed: 0.30, shrink: 1.00 }, { speed: 0.45, shrink: 0.80 }, { speed: 0.60, shrink: 0.62 }];
-function startRepairGame(itemId) { const it = S.inv.find(x => x.id === itemId); if (!it) return; if (repairGame) cancelAnimationFrame(repairGame.rafId); repairGame = { itemId, item: it, round: 0, totalRounds: 3, score: 0, perfect: 0, results: [], speed: 0.30, position: 50, direction: 1, goodMin: 15, goodMax: 85, perfMin: 30, perfMax: 70, running: false, rafId: null, lastResult: null }; setupRound(); renderRepairGame(); startRepairLoop(); }
+const MG_ROUNDS = [{ speed: 0.34, shrink: 1.00 }, { speed: 0.52, shrink: 0.75 }, { speed: 0.70, shrink: 0.55 }, { speed: 0.88, shrink: 0.40 }];
+function startRepairGame(itemId) { const it = S.inv.find(x => x.id === itemId); if (!it) return; if (repairGame) cancelAnimationFrame(repairGame.rafId); repairGame = { itemId, item: it, round: 0, totalRounds: 4, score: 0, perfect: 0, results: [], speed: 0.30, position: 50, direction: 1, goodMin: 15, goodMax: 85, perfMin: 30, perfMax: 70, running: false, rafId: null, lastResult: null }; setupRound(); renderRepairGame(); startRepairLoop(); }
 /* зона берётся из стоимости товара и сужается с каждым раундом */
 function setupRound() {
   const g = repairGame; if (!g) return;
@@ -3919,9 +4570,10 @@ function finishRepairGame() {
   const g = repairGame; if (!g) return; cancelAnimationFrame(g.rafId);
   const it = g.item; const masterCost = round100(it.marketValue * 0.2);
   let payCost = 0, fixed = false, summaryText = '', emoji = '';
-  if (g.score >= 4) { payCost = 0; fixed = true; emoji = '🏆'; summaryText = t('sum_perfect'); }
-  else if (g.score >= 2) { payCost = round100(masterCost * 0.2); fixed = true; emoji = '✅'; summaryText = t('sum_good'); }
-  else if (g.score >= 1) { payCost = round100(masterCost * 0.5); fixed = true; emoji = '🔧'; summaryText = t('sum_bad'); }
+  /* максимум 8 очков за 4 раунда: бесплатная починка только при 6+ */
+  if (g.score >= 6) { payCost = 0; fixed = true; emoji = '🏆'; summaryText = t('sum_perfect'); }
+  else if (g.score >= 4) { payCost = round100(masterCost * 0.2); fixed = true; emoji = '✅'; summaryText = t('sum_good'); }
+  else if (g.score >= 2) { payCost = round100(masterCost * 0.5); fixed = true; emoji = '🔧'; summaryText = t('sum_bad'); }
   else { fixed = false; emoji = '💀'; summaryText = t('sum_worse'); }
   if (S.money < payCost) payCost = Math.max(0, S.money);
   showSheet(`<div class="drag-handle"></div><div class="mg-summary"><div class="big">${emoji}</div><div class="txt">${summaryText}</div><div class="sub">${t('msg_score', { n: g.score })} · ${g.perfect} perfect</div><div class="rows" style="text-align:left;background:var(--surface-2);padding:12px;border-radius:12px">${payCost > 0 ? `<div class="row"><span>${t('sum_pay')}</span><b>${fmt(payCost)}</b></div>` : ''}<div class="row"><span>${t('sum_result')}</span><b class="${fixed ? 'good' : 'bad'}">${fixed ? t('sum_fixed') : t('sum_broken')}</b></div></div></div><button class="btn-primary btn-full" onclick="confirmRepairResult(${fixed}, ${payCost})">${t('sum_done')}</button>`);
@@ -3934,7 +4586,7 @@ window.confirmRepairResult = (fixed, payCost) => {
     S.stats.repairsDone++; addXp(25); playSound('sell'); showConfetti(15);
     goalProgress('repair', 1);
     unlockAch('first_repair');
-    if (g.perfect === 3) unlockAch('perfect_repair');
+    if (g.perfect >= 3) unlockAch('perfect_repair');
   }
   else { it.trueValue = round100(it.trueValue * 0.85); playSound('error'); }
   repairGame = null; closeSheet();
@@ -3948,9 +4600,9 @@ function completeOrder(orderId) {
   S.dayEarned = (S.dayEarned || 0) + o.reward;
   if (S.dayEarned > (S.stats.bestDayEarnings || 0)) S.stats.bestDayEarnings = S.dayEarned;
   const profit = o.reward - it.askPrice; if (profit > S.stats.bestDeal) S.stats.bestDeal = profit;
-  addXp(30); checkQuests('sell', 1); checkQuests('earn', o.reward);
+  registerSale(profit); addXp(30); checkQuests('sell', 1); checkQuests('earn', o.reward);
   goalProgress('sell', 1); goalProgress('earn', o.reward);
-  toast(`✅ ${t('order_reward')}: ${profit >= 0 ? '+' : ''}${fmt(profit)}`, profit >= 0 ? 'success' : 'error'); playSound('sell'); haptic(30);
+  toast(`✅ ${t('order_reward')}: ${profit >= 0 ? '+' : ''}${fmt(profit)}` + comboLabel(), profit >= 0 ? 'success' : 'error'); playSound('sell'); haptic(30);
   flyCoins(5); if (profit >= 10000) showConfetti(20);
   checkAch(); checkRich(); render();
 }
@@ -3969,8 +4621,8 @@ function buyPallet() {
   if (S.money < p.price || S.inv.length + p.size > invLimit()) return;
   S.money -= p.price; S.stats.totalSpent += p.price;
   const items = [];
-  for (let i = 0; i < p.size; i++) { const it = makeLot(); S.inv.push(it); items.push(it); }
-  S.pallet = null; unlockAch('pallet_first');
+  for (let i = 0; i < p.size; i++) { const it = makeLot(); S.inv.push(it); markCollected(it); items.push(it); }
+  S.pallet = null; S.stats.palletsBought = (S.stats.palletsBought || 0) + 1; unlockAch('pallet_first'); checkAch();
   showSheet(`<div class="drag-handle"></div><h2><span class="btn-ico">${ico('box')}</span> ${t('pallet_title2')}</h2><div class="rows">${items.map(it => `<div class="row"><span>${getIconHtml(it, true)} ${itemName(it)}</span><b>${fmt(it.marketValue)}</b></div>`).join('')}</div><button class="btn-primary btn-full" onclick="closeSheet()">${t('ok_btn')}</button>`);
   playSound('buy'); haptic(40); showConfetti(15); render();
 }
@@ -4001,6 +4653,7 @@ function storeItem(id) {
   S.inv = S.inv.filter(x => x.id !== id);
   it.storedDay = S.day;
   S.storage.push(it);
+  S.stats.storedCount = (S.stats.storedCount || 0) + 1; checkAch();
   logAction('box', t('log_stored', { n: itemName(it) }));
   toast(t('stored_toast', { n: itemName(it) }), 'success', { label: t('undo'), fn: () => undoStore(it.id) });
   render();
@@ -4019,12 +4672,108 @@ window.undoStore = undoStore;
 function unstoreItem(id) { const it = S.storage.find(x => x.id === id); if (!it || S.inv.length >= invLimit()) return; S.storage = S.storage.filter(x => x.id !== id); delete it.storedDay; S.inv.push(it); render(); }
 function takeCredit() { const limit = creditLimit(); if (S.credit >= limit) { toast(t('credit_limit'), 'error'); return; } const avail = limit - S.credit; showSheet(`<div class="drag-handle"></div><h2>💳 ${t('credit_title')}</h2><div class="hint">${t('credit_avail', { n: fmt(avail), r: 3 })}</div><input id="creditInput" type="number" placeholder="${t('credit_input_ph')}" inputmode="numeric" value="${Math.min(avail, 5000)}" style="padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-family:inherit;font-size:18px;font-weight:800;text-align:center;width:100%"><button class="btn-primary btn-full" onclick="confirmCredit()">${t('credit_take')}</button><button class="btn-ghost btn-full" onclick="closeSheet()">${t('cancel_btn')}</button>`); }
 window.confirmCredit = () => { const inp = $('creditInput'); if (!inp) return; const limit = creditLimit(); const avail = limit - S.credit; const n = Math.max(0, Math.min(avail, Math.round(Number(inp.value || 0) / 100) * 100)); if (!n) { toast(t('msg_enter_amount'), 'error'); return; } S.credit += n; S.money += n; toast(`💳 +${fmt(n)}`, 'success'); checkRich(); closeSheet(); };
-function payCredit() { if (S.credit <= 0 || S.money < S.credit) { toast(t('no_money'), 'error'); return; } showConfirm(t('pay_title', { n: fmt(S.credit) }), t('pay_warn'), () => { S.money -= S.credit; S.stats.totalSpent += S.credit; S.credit = 0; toast('💳 ' + t('ok_btn'), 'success'); render(); }); }
+function payCredit() { if (S.credit <= 0 || S.money < S.credit) { toast(t('no_money'), 'error'); return; } showConfirm(t('pay_title', { n: fmt(S.credit) }), t('pay_warn'), () => { S.money -= S.credit; S.stats.totalSpent += S.credit; S.credit = 0; unlockAch('debt_free'); checkAch(); toast('💳 ' + t('ok_btn'), 'success'); render(); }); }
+/* ═══ КЕЙСЫ: случайный приз с шансом джекпота ×6 ═══ */
+const CASES = [
+  { id: 'bronze', emoji: '🥉', cost: 30000, name: { ru: 'Бронзовый кейс', en: 'Bronze case', es: 'Caja de bronce' } },
+  { id: 'silver', emoji: '🥈', cost: 120000, name: { ru: 'Серебряный кейс', en: 'Silver case', es: 'Caja de plata' } },
+  { id: 'gold', emoji: '🥇', cost: 450000, name: { ru: 'Золотой кейс', en: 'Golden case', es: 'Caja dorada' } }
+];
+const CASE_ROLLS = [
+  { k: 0.4, w: 24 }, { k: 0.75, w: 30 }, { k: 1.15, w: 26 }, { k: 1.8, w: 14 }, { k: 3, w: 5 }, { k: 6, w: 1 }
+];
+function weightedPick(arr) {
+  let sum = 0; for (const x of arr) sum += x.w;
+  let roll = Math.random() * sum;
+  for (const x of arr) { roll -= x.w; if (roll <= 0) return x; }
+  return arr[arr.length - 1];
+}
+function caseItem(value) {
+  const t = ITEMS.reduce((best, x) => Math.abs(x.base - value) < Math.abs(best.base - value) ? x : best, ITEMS[0]);
+  return { id: ++idc, itemId: t.id, name: t.name, emoji: t.emoji, slug: t.slug, cat: t.cat, condition: rnd(0.75, 1), marketValue: value, trueValue: round100(value * rnd(0.92, 1.08)), defect: false, askPrice: round100(value * rnd(0.7, 0.9)), estimate: value, stock: 1, inspected: true, tier: 'rare', story: null, isBlack: false, scamChance: 0, brand: t.brand, icon: t.icon };
+}
+function buildSpinStrip(pool, winIdx, winEmoji, onLand) {
+  const strip = $('spinStrip'), wrap = $('spinWrap');
+  if (!strip || !wrap) return;
+  let html = '';
+  for (let i = 0; i < 30; i++) html += `<div class="spin-cell">${i === winIdx ? winEmoji : pool[i % pool.length]}</div>`;
+  strip.innerHTML = html;
+  const cellW = 78, pad = 8;
+  const target = pad + winIdx * cellW + 36 - wrap.clientWidth / 2;
+  requestAnimationFrame(() => { requestAnimationFrame(() => {
+    strip.style.transition = 'transform 3.8s cubic-bezier(.12,.75,.06,1)';
+    strip.style.transform = 'translateX(' + (-target) + 'px)';
+  }); });
+  setTimeout(onLand, 4100);
+}
+function openCase(cid) {
+  const c = CASES.find(x => x.id === cid); if (!c) return;
+  if (S.money < c.cost) { toast(t('no_money'), 'error'); return; }
+  if (S.inv.length >= invLimit()) { toast(t('no_space'), 'error'); return; }
+  S.money -= c.cost; S.stats.totalSpent += c.cost;
+  const roll = weightedPick(CASE_ROLLS);
+  const value = round100(c.cost * roll.k * rnd(0.9, 1.1));
+  const it = caseItem(value);
+  S.inv.push(it); markCollected(it);
+  playSound('click'); haptic(15);
+  const pool = ITEMS.map(x => x.emoji);
+  showSheet(`<div class="drag-handle"></div><h2>${c.emoji} ${nm(c.name)}</h2><div class="spin-wrap" id="spinWrap"><div class="spin-pointer"></div><div class="spin-strip" id="spinStrip"></div></div><div class="hint">${t('case_desc2')}</div>`);
+  buildSpinStrip(pool, 24, it.emoji, () => {
+    showSheet(`<div class="drag-handle"></div><h2>${t('case_won')}</h2><div style="text-align:center;padding:8px 0;"><div style="width:84px;height:84px;margin:0 auto 10px;background:var(--surface-2);border-radius:20px;display:grid;place-items:center;font-size:40px;">${it.emoji}</div><div style="font-weight:900;font-size:18px;">${itemName(it)}</div><div class="row" style="margin-top:8px"><span>${t('case_value')}</span><b class="good">${fmt(it.marketValue)}</b></div>${roll.k >= 3 ? `<div class="row"><span></span><b style="color:#fbbf24">JACKPOT ×${roll.k}</b></div>` : ''}</div><button class="btn-primary btn-full" onclick="closeSheet()">${t('ok_btn')}</button>`);
+    if (roll.k >= 3) screenShake();
+    showConfetti(roll.k >= 1.8 ? 40 : 15); playSound(roll.k >= 3 ? 'jackpot' : (roll.k >= 1 ? 'ach' : 'sell')); checkRich(); saveDebounced(); render();
+  });
+}
+/* ═══ ГРАФИК ДОХОДА: бары за последние 14 дней ═══ */
+function drawSparkline() {
+  const cv = $('sparkCanvas'); if (!cv) return;
+  const ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
+  const data = (S.earnHistory || []).slice(-14);
+  if (data.length < 2) return;
+  const W = cv.width, H = cv.height, pad = 8;
+  ctx.clearRect(0, 0, W, H);
+  const max = Math.max.apply(null, data.concat([1]));
+  const css = getComputedStyle(document.documentElement);
+  const cPrim = (css.getPropertyValue('--primary') || '#a78bfa').trim();
+  const cText = (css.getPropertyValue('--text-3') || '#888').trim();
+  const step = (W - pad * 2) / data.length;
+  const bw = Math.max(6, step * 0.55);
+  ctx.fillStyle = cPrim;
+  for (let i = 0; i < data.length; i++) {
+    const h = Math.max(3, (data[i] / max) * (H - pad * 2 - 30));
+    ctx.globalAlpha = 0.45 + 0.55 * (data[i] / max);
+    ctx.fillRect(pad + i * step + (step - bw) / 2, H - pad - h, bw, h);
+  }
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = cText; ctx.font = '600 22px Inter, sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(fmt(max), pad, 30);
+}
+/* ═══ СЕРИЯ ПРОДАЖ: чем больше подряд за день — тем больше XP ═══ */
+function registerSale(price) {
+  if (S.comboDay !== S.day) { S.comboDay = S.day; S.combo = 0; }
+  S.combo = (S.combo || 0) + 1;
+  /* бонус XP за серию без отдельного тоста — серия покажется суффиксом
+     в тосте продажи (comboLabel), чтобы не наслаивать уведомления */
+  if (S.combo >= 2) addXp(Math.min(50, S.combo * 5));
+  if (S.combo === 5 || S.combo === 10) showConfetti(25);
+  /* крупный куш: встряска экрана и дождь из монет */
+  if (price && price >= 30000) { screenShake(); flyCoins(15); }
+}
+/* суффикс серии для тоста о продаже */
+function comboLabel() {
+  return (S.combo || 0) >= 2 ? ' · 🔥×' + S.combo : '';
+}
+/* предмет впервые попал в инвентарь — штамп в альбом коллекционера */
+function markCollected(it) {
+  if (!it || !it.itemId || !S.collection || S.collection[it.itemId]) return;
+  S.collection[it.itemId] = true;
+}
 function resetGame() {
   showConfirm(t('reset_title'), t('reset_warn'), () => {
     const theme = S.theme, lang = S.lang, device = S.device, accent = S.accent, motion = S.motion;
-    SafeStorage.remove(SAVE_KEY); SafeStorage.remove(SAVE_RAW_KEY);
+    SafeStorage.remove(SAVE_KEY); SafeStorage.remove(SAVE_RAW_KEY); SafeStorage.remove(SAVE_BACKUP_KEY); SafeStorage.remove(SAVE_BACKUP_KEY);
     S = defaultState(); S.theme = theme; S.lang = lang; S.device = device; S.accent = accent; S.motion = motion;
+    if (auction) { cleanupAuctionTimers(); auction = null; }
     chat = null; repairGame = null; idc = 0;
     auctionActive = false;
     displayMoney = S.money;
@@ -4052,14 +4801,20 @@ function checkDailyBonus() {
 function nextDay() {
   if (chat || repairGame || auctionActive) return;
   S.day++;
+  pushDayTrends();
+  /* история доходов для графика в профиле */
+  if (!Array.isArray(S.earnHistory)) S.earnHistory = [];
+  S.earnHistory.push(S.dayEarned || 0);
+  if (S.earnHistory.length > 30) S.earnHistory = S.earnHistory.slice(-30);
   S.dayEarned = 0;
   const rent = rentCost();
-  if (S.money < rent) { S.rep = Math.max(0, S.rep - 10); toast(t('msg_rent_warn'), 'error'); }
+  if (S.money < rent) { S.rep = Math.max(0, S.rep - 10); toast(t('msg_rent_warn'), 'error'); screenShake(); }
   S.money -= rent; S.stats.totalSpent += rent;
   if (S.credit > 0) S.credit += creditInterest();
   if (S.event) { S.event.daysLeft--; if (S.event.daysLeft <= 0) S.event = null; }
   else if (Math.random() < 0.35) { S.event = pick([{ id: 'tech_boom', emoji: '📈', text: { ru: 'Техника +20%', en: 'Tech +20%', es: 'Tecnología +20%' }, effect: 'sellBoost', cat: 'tech', mult: 1.20, daysLeft: 3 }, { id: 'vintage', emoji: '🎷', text: { ru: 'Винтаж +25%', en: 'Vintage +25%', es: 'Vintage +25%' }, effect: 'sellBoost', cat: 'hobby', mult: 1.25, daysLeft: 3 }, { id: 'sport', emoji: '🌞', text: { ru: 'Спорт +20%', en: 'Sport +20%', es: 'Deporte +20%' }, effect: 'sellBoost', cat: 'sport', mult: 1.20, daysLeft: 3 }, { id: 'inspect', emoji: '🔍', text: { ru: 'Осмотр бесплатный', en: 'Free inspection', es: 'Inspección gratis' }, effect: 'freeInspect', daysLeft: 3 }, { id: 'crash', emoji: '📉', text: { ru: 'Рынок −20%', en: 'Market −20%', es: 'Mercado −20%' }, effect: 'cheapMarket', mult: 0.80, daysLeft: 3 }, { id: 'frenzy', emoji: '🔥', text: { ru: 'Ажиотаж +15%', en: 'Frenzy +15%', es: 'Fiebre +15%' }, effect: 'sellBoostAll', mult: 1.15, daysLeft: 3 }, { id: 'tax', emoji: '🧾', text: { ru: 'Налоговая +800', en: 'Tax +800', es: 'Impuesto +800' }, effect: 'taxRaise', amount: 800, daysLeft: 3 }]); }
   newMarket(); generateQuests();
+  { const hot = S.market.find(l => !l.defect && l.estimate > l.askPrice * 1.3); if (hot) setTimeout(() => toast(t('hot_lot', { n: itemName(hot) }), 'success'), 700); }
   if (!S.goal || S.goal.done || S.day > S.goal.endDay) newGoal();
   if (!S.storyQuest || S.storyDone) newStoryQuest();
   const inc = storageIncome();
@@ -4112,6 +4867,7 @@ window.doImport = () => {
     if (!Array.isArray(S.quests)) S.quests = [];
     if (!Array.isArray(S.goalsDone)) S.goalsDone = [];
     if (!S.priceHistory || typeof S.priceHistory !== 'object') S.priceHistory = {};
+    if (!S.itemTrend || typeof S.itemTrend !== 'object') S.itemTrend = {};
     if (!Array.isArray(S.blackMarket)) S.blackMarket = [];
     S.device = S.device === 'desktop' ? 'desktop' : 'phone';
     S.motion = S.motion !== false;
@@ -4133,7 +4889,7 @@ window.doImport = () => {
    ОБРАБОТЧИКИ
    ═══════════════════════════════════════════════════════ */
 $('modal').addEventListener('click', e => {
-  if (e.target === $('modal') && !chat && !repairGame && !confirmCallback && !auctionActive) closeSheet();
+  if (e.target === $('modal') && !chat && !repairGame && !confirmCallback) closeSheet();
 });
 /* обработчик делегирован на body: кнопки есть и в HUD, и в панелях */
 document.body.addEventListener('click', e => {
@@ -4167,6 +4923,13 @@ document.body.addEventListener('click', e => {
   else if (act === 'device') setDevice(id);
   else if (act === 'motion') { S.motion = S.motion === false; applyMotion(); saveDebounced(); render(); }
   else if (act === 'accent') { S.accent = ACCENTS[id] ? id : 'violet'; applyAccent(); saveDebounced(); render(); }
+  else if (act === 'lang') {
+    setLang(id);
+    document.querySelectorAll('#splashLang .lang-btn').forEach(b => b.classList.toggle('active', b.dataset.id === S.lang));
+  }
+  else if (act === 'logToggle') { S.logOpen = S.logOpen === false; saveDebounced(); render(); }
+  else if (act === 'achHint') showAchHint(id);
+  else if (act === 'caseBuy') openCase(id);
   else if (act === 'filter') { S.filter = id; render(); }
   else if (act === 'sort') { S.sortBy = id; render(); }
 });
@@ -4202,10 +4965,37 @@ document.addEventListener('pointerdown', e => {
   b.appendChild(r);
   setTimeout(() => r.remove(), 620);
 }, { passive: true });
+$('toTop').addEventListener('click', () => {
+  const m = $('appMain');
+  if (!m) return;
+  m.scrollTo({ top: 0, behavior: S.motion === false ? 'auto' : 'smooth' });
+  haptic(8);
+});
+/* Клавиатура (десктоп): 1–6 — вкладки, Esc — закрыть окно, / — фокус в поиск */
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+  if (e.key === 'Escape') {
+    const sheetOpen = !$('modal').classList.contains('hidden');
+    if (sheetOpen) { if (typing) t.blur(); closeSheet(); return; }
+    if (typing) t.blur();
+    return;
+  }
+  if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === '/') {
+    const inp = $('searchInput');
+    if (inp && activeTab === 'market') { e.preventDefault(); inp.focus(); }
+    return;
+  }
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 6) switchTab(['market', 'inv', 'orders', 'biz', 'black', 'profile'][n - 1]);
+});
 function updateScrollProgress(pct) {
   const bar = $('scrollBar');
-  if (!bar) return;
-  bar.style.width = (pct * 100).toFixed(2) + '%';
+  if (bar) bar.style.transform = 'scaleX(' + pct.toFixed(4) + ')';
+  /* кнопка «наверх» — дешёвый classList.toggle, без перерасчёта раскладки */
+  const fab = $('toTop');
+  if (fab) { const m = $('appMain'); fab.classList.toggle('show', !!m && m.scrollTop > 480); }
 }
 function moveNavPill(tab) {
   const pill = $('navPill');
@@ -4267,6 +5057,7 @@ function init() {
     checkDailyBonus();
     render();
     if (loaded) setTimeout(() => toast(t('msg_loaded'), 'success'), 300);
+    if (pendingWelcome) { const pw = pendingWelcome; pendingWelcome = null; setTimeout(() => showAlert(t('welcome_back'), t('welcome_earned', { n: fmt(pw) }), '💰'), 900); }
   }
   save(true);
 }
